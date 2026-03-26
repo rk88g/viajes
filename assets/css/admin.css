@@ -1,0 +1,30 @@
+.admin-app {
+  padding-bottom: 36px;
+}
+
+#logoutButton {
+  display: none;
+}
+
+.admin-header-actions {
+  justify-content: end;
+}
+
+#adminUserLabel {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.checkbox-row {
+  align-items: center;
+}
+
+.checkbox-row label,
+.checkbox-row {
+  font-weight: 700;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+}
