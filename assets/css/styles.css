@@ -686,6 +686,39 @@ select:focus {
   z-index: 40;
 }
 
+.scroll-top-button {
+  position: fixed;
+  right: 18px;
+  bottom: 86px;
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--navy) 0%, #21506f 100%);
+  color: white;
+  box-shadow: 0 16px 28px rgba(18, 49, 74, 0.24);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease;
+  z-index: 42;
+}
+
+.scroll-top-button.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.scroll-top-button svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
 .modal {
   position: fixed;
   inset: 0;
@@ -762,7 +795,7 @@ select:focus {
 
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   margin-bottom: 20px;
 }
 
@@ -939,6 +972,11 @@ th {
     right: 14px;
     bottom: 14px;
     justify-content: center;
+  }
+
+  .scroll-top-button {
+    right: 14px;
+    bottom: 84px;
   }
 
   .main-nav {

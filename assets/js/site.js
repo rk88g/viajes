@@ -283,6 +283,7 @@
     contactPhoneLinkSecondary: document.querySelector('#contactPhoneLinkSecondary'),
     contactWhatsappLinkSecondary: document.querySelector('#contactWhatsappLinkSecondary'),
     floatingWhatsapp: document.querySelector('#floatingWhatsapp'),
+    scrollTopButton: document.querySelector('#scrollTopButton'),
     contactForm: document.querySelector('#contactForm'),
     contactFeedback: document.querySelector('#contactFeedback'),
     bookingModal: document.querySelector('#bookingModal'),
@@ -1024,7 +1025,22 @@
 
     elements.contactForm.addEventListener('submit', submitContact);
     elements.bookingForm.addEventListener('submit', submitBooking);
+    if (elements.scrollTopButton) {
+      const toggleVisibility = () => {
+        if (window.scrollY > 280) {
+          elements.scrollTopButton.classList.add('is-visible');
+        } else {
+          elements.scrollTopButton.classList.remove('is-visible');
+        }
+      };
 
+      window.addEventListener('scroll', toggleVisibility, { passive: true });
+      toggleVisibility();
+
+      elements.scrollTopButton.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
   }
 
   async function init() {

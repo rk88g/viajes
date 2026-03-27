@@ -10,26 +10,42 @@ try {
     $payload = json_input();
     $messageId = (int) ($payload['id'] ?? 0);
     $status = trim((string) ($payload['status'] ?? ''));
+    $adminNotes = array_key_exists('admin_notes', $payload) ? trim((string) ($payload['admin_notes'] ?? '')) : null;
 
-    if ($messageId <= 0 || $status === '') {
-        fail('Mensaje y estatus son obligatorios.', 422);
+    if ($messageId <= 0) {
+        fail('Mensaje invalido.', 422);
     }
 
     $allowedStatuses = ['new', 'contacted', 'closed'];
-    if (!in_array($status, $allowedStatuses, true)) {
+    if ($status !== '' && !in_array($status, $allowedStatuses, true)) {
         fail('Estatus de mensaje no valido.', 422);
     }
 
+    $fields = [];
+    $params = [':id' => $messageId];
+
+    if ($status !== '') {
+        $fields[] = 'status = :status';
+        $params[':status'] = $status;
+    }
+
+    if ($adminNotes !== null) {
+        $fields[] = 'admin_notes = :admin_notes';
+        $params[':admin_notes'] = $adminNotes;
+    }
+
+    if ($fields === []) {
+        fail('No hay cambios para guardar.', 422);
+    }
+
+    $fields[] = "updated_at = timezone('utc', now())";
+
     $stmt = db()->prepare(
-        "update public.contact_messages
-         set status = :status,
-             updated_at = timezone('utc', now())
-         where id = :id"
+        'update public.contact_messages
+         set ' . implode(', ', $fields) . '
+         where id = :id'
     );
-    $stmt->execute([
-        ':status' => $status,
-        ':id' => $messageId,
-    ]);
+    $stmt->execute($params);
 
     success(['message' => 'Mensaje actualizado correctamente.']);
 } catch (Throwable $exception) {

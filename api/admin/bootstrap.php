@@ -41,12 +41,44 @@ try {
     $bookings = $bookingsStmt->fetchAll();
 
     $messagesStmt = $pdo->query(
-        'select id, full_name, email, phone, message, status
+        'select id, full_name, email, phone, message, admin_notes, status
          from public.contact_messages
          order by created_at desc
          limit 20'
     );
     $messages = $messagesStmt->fetchAll();
+
+    $incomeEntriesStmt = $pdo->query(
+        'select id, concept, category, customer_name, amount, currency, status, payment_date, due_date, payment_method, reference_code, source_type, booking_id, notes
+         from public.income_entries
+         order by payment_date desc, created_at desc
+         limit 50'
+    );
+    $incomeEntries = array_map(static fn(array $row): array => map_income_entry($row), $incomeEntriesStmt->fetchAll());
+
+    $incomeSummaryStmt = $pdo->query(
+        "select
+            to_char(date_trunc('month', payment_date), 'YYYY-MM') as month_key,
+            date_trunc('month', payment_date)::date as month_start,
+            coalesce(sum(case when status = 'received' then amount else 0 end), 0) as received_total,
+            coalesce(sum(case when status = 'pending' then amount else 0 end), 0) as pending_total,
+            coalesce(sum(case when status = 'refunded' then amount else 0 end), 0) as refunded_total,
+            count(*) as entries_count
+         from public.income_entries
+         group by 1, 2
+         order by month_start desc
+         limit 12"
+    );
+    $incomeSummary = array_map(
+        static function (array $row): array {
+            $row['received_total'] = (float) ($row['received_total'] ?? 0);
+            $row['pending_total'] = (float) ($row['pending_total'] ?? 0);
+            $row['refunded_total'] = (float) ($row['refunded_total'] ?? 0);
+            $row['entries_count'] = (int) ($row['entries_count'] ?? 0);
+            return $row;
+        },
+        $incomeSummaryStmt->fetchAll()
+    );
 
     success([
         'settings' => $settings,
@@ -54,6 +86,8 @@ try {
         'departures' => $departures,
         'bookings' => $bookings,
         'messages' => $messages,
+        'income_entries' => $incomeEntries,
+        'income_summary' => $incomeSummary,
     ]);
 } catch (Throwable $exception) {
     fail($exception->getMessage(), 500);

@@ -77,6 +77,10 @@
             <span>Mensajes nuevos</span>
             <strong id="metricMessages">0</strong>
           </article>
+          <article>
+            <span>Ingresos del mes</span>
+            <strong id="metricIncome">$0</strong>
+          </article>
         </section>
 
         <section class="admin-grid">
@@ -203,6 +207,121 @@
           <div class="admin-panel">
             <div class="panel-head">
               <div>
+                <span class="eyebrow">Finanzas</span>
+                <h2>Ingresos mensuales</h2>
+              </div>
+              <button class="button button-secondary" id="resetIncomeButton" type="button">Nuevo ingreso</button>
+            </div>
+            <form id="incomeForm" class="stack-form">
+              <input type="hidden" name="income_id" />
+              <label>
+                Concepto
+                <input type="text" name="concept" required />
+              </label>
+              <label>
+                Categoria
+                <input type="text" name="category" placeholder="Reservas, Anticipo, Extra, Convenio" required />
+              </label>
+              <label>
+                Cliente o referencia
+                <input type="text" name="customer_name" placeholder="Nombre del cliente o empresa" />
+              </label>
+              <label>
+                Cantidad
+                <input type="number" name="amount" min="0" step="0.01" required />
+              </label>
+              <label>
+                Estatus
+                <select name="status">
+                  <option value="received">Recibido</option>
+                  <option value="pending">Pendiente</option>
+                  <option value="cancelled">Cancelado</option>
+                  <option value="refunded">Reembolsado</option>
+                </select>
+              </label>
+              <label>
+                Fecha de pago
+                <input type="date" name="payment_date" required />
+              </label>
+              <label>
+                Fecha objetivo o vencimiento
+                <input type="date" name="due_date" />
+              </label>
+              <label>
+                Metodo de pago
+                <input type="text" name="payment_method" placeholder="Transferencia, Efectivo, Stripe, SPEI" />
+              </label>
+              <label>
+                Referencia
+                <input type="text" name="reference_code" placeholder="Folio, transaccion o comprobante" />
+              </label>
+              <label>
+                Notas internas
+                <textarea name="notes" rows="4" placeholder="Detalle del ingreso, acuerdo comercial o seguimiento"></textarea>
+              </label>
+              <button class="button button-primary" type="submit">Guardar ingreso</button>
+            </form>
+          </div>
+
+          <div class="admin-panel">
+            <div class="panel-head">
+              <div>
+                <span class="eyebrow">Resumen</span>
+                <h2>Totales por mes</h2>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Mes</th>
+                    <th>Recibido</th>
+                    <th>Pendiente</th>
+                    <th>Reembolsado</th>
+                    <th>Movimientos</th>
+                  </tr>
+                </thead>
+                <tbody id="incomeSummaryTableBody">
+                  <tr>
+                    <td colspan="5">Sin resumen disponible.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-grid">
+          <div class="admin-panel">
+            <div class="panel-head">
+              <div>
+                <span class="eyebrow">Ingresos</span>
+                <h2>Movimientos registrados</h2>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Concepto y detalle</th>
+                    <th>Pago y vencimiento</th>
+                    <th>Monto</th>
+                    <th>Estatus</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="incomeTableBody">
+                  <tr>
+                    <td colspan="5">Sin ingresos registrados.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="panel-head">
+              <div>
                 <span class="eyebrow">Configuracion</span>
                 <h2>Textos del sitio y soporte</h2>
               </div>
@@ -268,7 +387,9 @@
               <button class="button button-primary" type="submit">Guardar configuracion</button>
             </form>
           </div>
+        </section>
 
+        <section class="admin-grid">
           <div class="admin-panel">
             <div class="panel-head">
               <div>
@@ -306,7 +427,7 @@
                     <tr>
                       <th>Nombre</th>
                       <th>Contacto</th>
-                      <th>Mensaje</th>
+                      <th>Mensaje y notas</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
@@ -378,5 +499,11 @@
         </section>
       </section>
     </main>
+
+    <button class="scroll-top-button" id="scrollTopButton" type="button" aria-label="Volver arriba">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 5l7 7-1.4 1.4-4.6-4.6V20h-2V8.8l-4.6 4.6L5 12l7-7z"></path>
+      </svg>
+    </button>
   </body>
 </html>
