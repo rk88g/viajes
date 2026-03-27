@@ -1,15 +1,15 @@
-window.VIAJES_CONFIG = {
-  supabaseUrl: "https://YOUR_PROJECT.supabase.co",
+﻿window.VIAJES_CONFIG = {
+  supabaseUrl: "https://cvrremzemwovoaojxsae.supabase.co",
   supabaseAnonKey: "YOUR_SUPABASE_ANON_KEY",
-  supabaseFunctionsBaseUrl: "https://YOUR_PROJECT.supabase.co/functions/v1",
+  supabaseFunctionsBaseUrl: "https://cvrremzemwovoaojxsae.supabase.co/functions/v1",
   stripeCheckoutFunction: "create-checkout-session",
   company: {
-    companyName: "Ruta GDL",
+    companyName: "Jalisco Rutas",
     cityLabel: "Guadalajara y Zona Metropolitana",
-    supportEmail: "hola@rutagdl.mx",
-    supportPhone: "+52 33 0000 0000",
-    whatsappNumber: "523300000000",
-    whatsappMessage: "Hola, quiero información sobre los próximos viajes y rutas turísticas."
+    supportEmail: "hola@jalisconrutas.com",
+    supportPhone: "+52 33 1246 9036",
+    whatsappNumber: "523312469036",
+    whatsappMessage: "Hola, quiero informacion sobre los proximos viajes y rutas turisticas."
   },
   chatbot: {
     enabled: false,

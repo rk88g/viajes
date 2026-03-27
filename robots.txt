@@ -1,0 +1,2 @@
+﻿User-agent: *
+Disallow: /acceso-jr-84k2.html
