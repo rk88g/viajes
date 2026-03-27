@@ -770,11 +770,11 @@ function refund_booking(PDO $pdo, string $bookingId): void
     }
 
     $departureUpdateStmt = $pdo->prepare(
-        'update public.departures
+        "update public.departures
          set booked_count = :booked_count,
              status = :status,
              updated_at = timezone('utc', now())
-         where id = :id'
+         where id = :id"
     );
     $departureUpdateStmt->execute([
         ':booked_count' => $newBookedCount,
