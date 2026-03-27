@@ -17,7 +17,8 @@
     settings: apiUrl('/api/admin/settings.php'),
     bookings: apiUrl('/api/admin/bookings.php'),
     messages: apiUrl('/api/admin/messages.php'),
-    income: apiUrl('/api/admin/income.php')
+    income: apiUrl('/api/admin/income.php'),
+    expenses: apiUrl('/api/admin/expenses.php')
   };
 
   const elements = {
@@ -35,12 +36,15 @@
     departureForm: document.querySelector('#departureForm'),
     settingsForm: document.querySelector('#settingsForm'),
     incomeForm: document.querySelector('#incomeForm'),
+    expenseForm: document.querySelector('#expenseForm'),
     departureTripSelect: document.querySelector('#departureTripSelect'),
     tripsTableBody: document.querySelector('#tripsTableBody'),
     departuresTableBody: document.querySelector('#departuresTableBody'),
     bookingsTableBody: document.querySelector('#bookingsTableBody'),
     messagesTableBody: document.querySelector('#messagesTableBody'),
     incomeTableBody: document.querySelector('#incomeTableBody'),
+    expenseTableBody: document.querySelector('#expenseTableBody'),
+    visitsTableBody: document.querySelector('#visitsTableBody'),
     incomeSummaryTableBody: document.querySelector('#incomeSummaryTableBody'),
     metricTrips: document.querySelector('#metricTrips'),
     metricDepartures: document.querySelector('#metricDepartures'),
@@ -50,6 +54,7 @@
     resetTripButton: document.querySelector('#resetTripButton'),
     resetDepartureButton: document.querySelector('#resetDepartureButton'),
     resetIncomeButton: document.querySelector('#resetIncomeButton'),
+    resetExpenseButton: document.querySelector('#resetExpenseButton'),
     scrollTopButton: document.querySelector('#scrollTopButton')
   };
 
@@ -60,6 +65,8 @@
     bookings: [],
     messages: [],
     incomeEntries: [],
+    expenseEntries: [],
+    siteVisits: [],
     incomeSummary: [],
     settings: null,
     activeSectionId: 'section-viajes',
@@ -332,6 +339,20 @@
     }).format(new Date(`${dateValue}T12:00:00`));
   }
 
+  function friendlyDateTime(dateValue) {
+    if (!dateValue) {
+      return 'Sin dato';
+    }
+
+    return new Intl.DateTimeFormat('es-MX', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(new Date(dateValue));
+  }
+
   function friendlyMonth(monthKey) {
     if (!monthKey) {
       return 'Mes';
@@ -553,7 +574,7 @@
 
   function renderIncomeSummary() {
     if (!state.incomeSummary.length) {
-      elements.incomeSummaryTableBody.innerHTML = '<tr><td colspan="5">Sin resumen disponible.</td></tr>';
+      elements.incomeSummaryTableBody.innerHTML = '<tr><td colspan="7">Sin resumen disponible.</td></tr>';
       return;
     }
 
@@ -563,9 +584,76 @@
           <tr>
             <td>${escapeHtml(friendlyMonth(item.month_key))}</td>
             <td>${currency(item.received_total)}</td>
+            <td>${currency(item.expense_total)}</td>
+            <td>${currency(item.net_total)}</td>
             <td>${currency(item.pending_total)}</td>
             <td>${currency(item.refunded_total)}</td>
             <td>${item.entries_count}</td>
+          </tr>
+        `
+      )
+      .join('');
+  }
+
+  function renderExpenseTable() {
+    if (!state.expenseEntries.length) {
+      elements.expenseTableBody.innerHTML = '<tr><td colspan="5">Sin gastos registrados.</td></tr>';
+      return;
+    }
+
+    elements.expenseTableBody.innerHTML = state.expenseEntries
+      .map(
+        (entry) => `
+          <tr>
+            <td>
+              <strong>${escapeHtml(entry.concept)}</strong><br />
+              <small>${escapeHtml(entry.category || 'Operacion')}${entry.vendor_name ? ` · ${escapeHtml(entry.vendor_name)}` : ''}</small>
+              ${
+                entry.payment_method || entry.reference_code
+                  ? `<br /><small>${escapeHtml(entry.payment_method || 'Metodo sin definir')}${entry.reference_code ? ` · Ref. ${escapeHtml(entry.reference_code)}` : ''}</small>`
+                  : ''
+              }
+              ${entry.notes ? `<span class="admin-note"><strong>Notas:</strong> ${escapeHtml(entry.notes)}</span>` : ''}
+            </td>
+            <td>${friendlyDate(entry.expense_date)}${entry.due_date ? `<br /><small>Vence: ${friendlyDate(entry.due_date)}</small>` : ''}</td>
+            <td>${currency(entry.amount)}</td>
+            <td>${actionBadge(entry.status)}</td>
+            <td>
+              <button class="action-link" type="button" data-action="edit-expense" data-id="${entry.id}">Editar</button><br />
+              <button class="action-link" type="button" data-action="delete-expense" data-id="${entry.id}">Eliminar</button>
+            </td>
+          </tr>
+        `
+      )
+      .join('');
+  }
+
+  function renderVisitsTable() {
+    if (!state.siteVisits.length) {
+      elements.visitsTableBody.innerHTML = '<tr><td colspan="4">Sin registros de visita.</td></tr>';
+      return;
+    }
+
+    elements.visitsTableBody.innerHTML = state.siteVisits
+      .map(
+        (visit) => `
+          <tr>
+            <td>
+              <strong>Cliente #${visit.id}</strong><br />
+              <small>${visit.visit_count} acceso${visit.visit_count === 1 ? '' : 's'} registrados</small>
+            </td>
+            <td>
+              <strong>${escapeHtml(visit.device_type || 'Dispositivo')}</strong><br />
+              <small>${escapeHtml(visit.browser_name || 'Navegador')} · ${escapeHtml(visit.os_name || 'Sistema')}</small>
+            </td>
+            <td>
+              <small>IP: ${escapeHtml(visit.ip_address || 'No disponible')}</small><br />
+              <small>Token: ${escapeHtml(String(visit.visitor_token || '').slice(0, 18))}${String(visit.visitor_token || '').length > 18 ? '...' : ''}</small>
+            </td>
+            <td>
+              <small>Primera vez: ${escapeHtml(friendlyDateTime(visit.first_seen_at))}</small><br />
+              <small>Ultima vez: ${escapeHtml(friendlyDateTime(visit.last_seen_at))}</small>
+            </td>
           </tr>
         `
       )
@@ -697,6 +785,8 @@
     state.bookings = data.bookings || [];
     state.messages = data.messages || [];
     state.incomeEntries = data.income_entries || [];
+    state.expenseEntries = data.expense_entries || [];
+    state.siteVisits = data.site_visits || [];
     state.incomeSummary = data.income_summary || [];
     renderMetrics();
     renderTripOptions();
@@ -705,6 +795,8 @@
     renderBookingsTable();
     renderMessagesTable();
     renderIncomeTable();
+    renderExpenseTable();
+    renderVisitsTable();
     renderIncomeSummary();
 
     if (hydrateSettings) {
@@ -713,6 +805,7 @@
 
     if (resetIncomeDraft) {
       resetIncomeForm();
+      resetExpenseForm();
     }
   }
 
@@ -763,6 +856,17 @@
     elements.incomeForm.income_id.value = '';
     elements.incomeForm.status.value = 'received';
     elements.incomeForm.payment_date.value = new Date().toISOString().slice(0, 10);
+  }
+
+  function resetExpenseForm() {
+    if (!elements.expenseForm) {
+      return;
+    }
+
+    elements.expenseForm.reset();
+    elements.expenseForm.expense_id.value = '';
+    elements.expenseForm.status.value = 'paid';
+    elements.expenseForm.expense_date.value = new Date().toISOString().slice(0, 10);
   }
 
   function fillTripForm(tripId) {
@@ -827,6 +931,27 @@
     elements.incomeForm.reference_code.value = income.reference_code || '';
     elements.incomeForm.notes.value = income.notes || '';
     activateSection('section-ingreso-mensual');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function fillExpenseForm(expenseId) {
+    const expense = state.expenseEntries.find((item) => String(item.id) === String(expenseId));
+    if (!expense) {
+      return;
+    }
+
+    elements.expenseForm.expense_id.value = expense.id;
+    elements.expenseForm.concept.value = expense.concept || '';
+    elements.expenseForm.category.value = expense.category || '';
+    elements.expenseForm.vendor_name.value = expense.vendor_name || '';
+    elements.expenseForm.amount.value = expense.amount || '';
+    elements.expenseForm.status.value = expense.status || 'paid';
+    elements.expenseForm.expense_date.value = expense.expense_date || '';
+    elements.expenseForm.due_date.value = expense.due_date || '';
+    elements.expenseForm.payment_method.value = expense.payment_method || '';
+    elements.expenseForm.reference_code.value = expense.reference_code || '';
+    elements.expenseForm.notes.value = expense.notes || '';
+    activateSection('section-gastos');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -1075,6 +1200,37 @@
     }
   }
 
+  async function submitExpense(event) {
+    event.preventDefault();
+    const formData = new FormData(elements.expenseForm);
+    const payload = {
+      id: formData.get('expense_id') || null,
+      concept: formData.get('concept'),
+      category: formData.get('category'),
+      vendor_name: formData.get('vendor_name') || '',
+      amount: Number(formData.get('amount')),
+      status: formData.get('status'),
+      expense_date: formData.get('expense_date'),
+      due_date: formData.get('due_date') || '',
+      payment_method: formData.get('payment_method') || '',
+      reference_code: formData.get('reference_code') || '',
+      notes: formData.get('notes') || ''
+    };
+
+    setAlert('Guardando gasto...');
+
+    try {
+      await request(API.expenses, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      resetExpenseForm();
+      await refreshAndRender('Gasto guardado correctamente.', { resetIncomeDraft: true });
+    } catch (error) {
+      setAlert(error.message, 'error');
+    }
+  }
+
   async function updateBookingStatus(bookingId, action, successMessage) {
     try {
       await request(API.bookings, {
@@ -1120,6 +1276,22 @@
         body: JSON.stringify({ id: incomeId })
       });
       await refreshAndRender('Ingreso eliminado.');
+    } catch (error) {
+      setAlert(error.message, 'error');
+    }
+  }
+
+  async function removeExpense(expenseId) {
+    if (!window.confirm('Eliminar este gasto?')) {
+      return;
+    }
+
+    try {
+      await request(API.expenses, {
+        method: 'DELETE',
+        body: JSON.stringify({ id: expenseId })
+      });
+      await refreshAndRender('Gasto eliminado.');
     } catch (error) {
       setAlert(error.message, 'error');
     }
@@ -1254,9 +1426,11 @@
     elements.departureForm.addEventListener('submit', submitDeparture);
     elements.settingsForm.addEventListener('submit', submitSettings);
     elements.incomeForm.addEventListener('submit', submitIncome);
+    elements.expenseForm.addEventListener('submit', submitExpense);
     elements.resetTripButton.addEventListener('click', resetTripForm);
     elements.resetDepartureButton.addEventListener('click', resetDepartureForm);
     elements.resetIncomeButton.addEventListener('click', resetIncomeForm);
+    elements.resetExpenseButton.addEventListener('click', resetExpenseForm);
 
     document.addEventListener('click', (event) => {
       const actionButton = event.target.closest('[data-action]');
@@ -1283,6 +1457,12 @@
       }
       if (action === 'delete-income') {
         removeIncome(id);
+      }
+      if (action === 'edit-expense') {
+        fillExpenseForm(id);
+      }
+      if (action === 'delete-expense') {
+        removeExpense(id);
       }
       if (action === 'mark-booking-paid') {
         updateBookingStatus(id, 'mark_paid', 'Reserva marcada como pagada y cupo actualizado.');

@@ -79,7 +79,9 @@
             <button type="button" data-section-target="section-resumen">Resumen</button>
             <button type="button" data-section-target="section-ingreso-mensual">Ingreso Mensual</button>
             <button type="button" data-section-target="section-ingresos">Ingresos</button>
+            <button type="button" data-section-target="section-gastos">Gastos</button>
             <button type="button" data-section-target="section-reservas-mensajes">Reservas y mensajes pendientes</button>
+            <button type="button" data-section-target="section-visitas">Visitas</button>
             <button type="button" data-section-target="section-inventario">Inventario</button>
             <button type="button" data-section-target="section-calendario">Calendario</button>
             <button type="button" data-section-target="section-configuracion">Configuracion</button>
@@ -246,7 +248,9 @@
                     <thead>
                       <tr>
                         <th>Mes</th>
-                        <th>Recibido</th>
+                        <th>Ingresos</th>
+                        <th>Gastos</th>
+                        <th>Neto</th>
                         <th>Pendiente</th>
                         <th>Reembolsado</th>
                         <th>Movimientos</th>
@@ -254,7 +258,7 @@
                     </thead>
                     <tbody id="incomeSummaryTableBody">
                       <tr>
-                        <td colspan="5">Sin resumen disponible.</td>
+                        <td colspan="7">Sin resumen disponible.</td>
                       </tr>
                     </tbody>
                   </table>
@@ -352,6 +356,89 @@
               </div>
             </section>
 
+            <section class="admin-section" id="section-gastos" data-admin-section>
+              <div class="admin-panel admin-panel-full">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">Gastos</span>
+                    <h2>Registrar y revisar egresos</h2>
+                  </div>
+                  <button class="button button-secondary" id="resetExpenseButton" type="button">Nuevo gasto</button>
+                </div>
+                <form id="expenseForm" class="stack-form">
+                  <input type="hidden" name="expense_id" />
+                  <label>
+                    Concepto
+                    <input type="text" name="concept" required />
+                  </label>
+                  <label>
+                    Categoria
+                    <input type="text" name="category" placeholder="Operacion, Marketing, Sueldos, Transporte" required />
+                  </label>
+                  <label>
+                    Proveedor o responsable
+                    <input type="text" name="vendor_name" placeholder="Proveedor, agencia o colaborador" />
+                  </label>
+                  <label>
+                    Cantidad
+                    <input type="number" name="amount" min="0" step="0.01" required />
+                  </label>
+                  <label>
+                    Estatus
+                    <select name="status">
+                      <option value="paid">Pagado</option>
+                      <option value="planned">Planeado</option>
+                      <option value="cancelled">Cancelado</option>
+                      <option value="refunded">Reembolsado</option>
+                    </select>
+                  </label>
+                  <label>
+                    Fecha del gasto
+                    <input type="date" name="expense_date" required />
+                  </label>
+                  <label>
+                    Fecha de vencimiento
+                    <input type="date" name="due_date" />
+                  </label>
+                  <label>
+                    Metodo de pago
+                    <input type="text" name="payment_method" placeholder="Transferencia, Efectivo, Tarjeta" />
+                  </label>
+                  <label>
+                    Referencia
+                    <input type="text" name="reference_code" placeholder="Factura, folio, SPEI o comprobante" />
+                  </label>
+                  <label>
+                    Notas internas
+                    <textarea name="notes" rows="4" placeholder="Detalle del gasto, motivo y observaciones"></textarea>
+                  </label>
+                  <button class="button button-primary" type="submit">Guardar gasto</button>
+                </form>
+
+                <div class="data-block">
+                  <h3>Gastos registrados</h3>
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Concepto y detalle</th>
+                          <th>Fecha y vencimiento</th>
+                          <th>Monto</th>
+                          <th>Estatus</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody id="expenseTableBody">
+                        <tr>
+                          <td colspan="5">Sin gastos registrados.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             <section class="admin-section" id="section-reservas-mensajes" data-admin-section>
               <div class="admin-panel admin-panel-full">
                 <div class="panel-head">
@@ -401,6 +488,34 @@
                       </tbody>
                     </table>
                   </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-section" id="section-visitas" data-admin-section>
+              <div class="admin-panel admin-panel-full">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">Visitas</span>
+                    <h2>Log de accesos al sitio</h2>
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Visitante</th>
+                        <th>Dispositivo</th>
+                        <th>Rastreo</th>
+                        <th>Actividad</th>
+                      </tr>
+                    </thead>
+                    <tbody id="visitsTableBody">
+                      <tr>
+                        <td colspan="4">Sin registros de visita.</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </section>

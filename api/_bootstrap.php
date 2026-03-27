@@ -446,6 +446,109 @@ function map_income_entry(array $row): array
     return $row;
 }
 
+function map_expense_entry(array $row): array
+{
+    foreach (['id'] as $field) {
+        if (isset($row[$field])) {
+            $row[$field] = (int) $row[$field];
+        }
+    }
+
+    if (isset($row['amount']) && $row['amount'] !== null) {
+        $row['amount'] = (float) $row['amount'];
+    }
+
+    return $row;
+}
+
+function detect_browser_name(string $userAgent): string
+{
+    $ua = strtolower($userAgent);
+
+    if ($ua === '') {
+        return 'Navegador no identificado';
+    }
+
+    if (str_contains($ua, 'edg/')) {
+        return 'Microsoft Edge';
+    }
+    if (str_contains($ua, 'opr/') || str_contains($ua, 'opera')) {
+        return 'Opera';
+    }
+    if (str_contains($ua, 'chrome/') && !str_contains($ua, 'edg/')) {
+        return 'Google Chrome';
+    }
+    if (str_contains($ua, 'firefox/')) {
+        return 'Mozilla Firefox';
+    }
+    if ((str_contains($ua, 'safari/') && str_contains($ua, 'version/')) && !str_contains($ua, 'chrome/')) {
+        return 'Safari';
+    }
+
+    return 'Navegador no identificado';
+}
+
+function detect_os_name(string $userAgent): string
+{
+    $ua = strtolower($userAgent);
+
+    if ($ua === '') {
+        return 'Sistema no identificado';
+    }
+
+    if (str_contains($ua, 'windows')) {
+        return 'Windows';
+    }
+    if (str_contains($ua, 'android')) {
+        return 'Android';
+    }
+    if (str_contains($ua, 'iphone') || str_contains($ua, 'ipad') || str_contains($ua, 'ios')) {
+        return 'iOS';
+    }
+    if (str_contains($ua, 'mac os') || str_contains($ua, 'macintosh')) {
+        return 'macOS';
+    }
+    if (str_contains($ua, 'linux')) {
+        return 'Linux';
+    }
+
+    return 'Sistema no identificado';
+}
+
+function detect_device_type(string $userAgent): string
+{
+    $ua = strtolower($userAgent);
+
+    if ($ua === '') {
+        return 'Dispositivo no identificado';
+    }
+
+    if (str_contains($ua, 'tablet') || str_contains($ua, 'ipad')) {
+        return 'Tablet';
+    }
+    if (str_contains($ua, 'mobile') || str_contains($ua, 'android') || str_contains($ua, 'iphone')) {
+        return 'Movil';
+    }
+
+    return 'Escritorio';
+}
+
+function map_site_visit(array $row): array
+{
+    foreach (['id', 'visit_count'] as $field) {
+        if (isset($row[$field])) {
+            $row[$field] = (int) $row[$field];
+        }
+    }
+
+    $userAgent = trim((string) ($row['user_agent'] ?? ''));
+    $row['browser_name'] = detect_browser_name($userAgent);
+    $row['os_name'] = detect_os_name($userAgent);
+    $row['device_type'] = detect_device_type($userAgent);
+
+    return $row;
+}
+
 function read_visitor_token(): ?string
 {
     $token = trim((string) ($_SERVER['HTTP_X_VISITOR_TOKEN'] ?? $_GET['visitor_token'] ?? ''));
