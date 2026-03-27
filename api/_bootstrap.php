@@ -697,3 +697,97 @@ function confirm_booking_payment(PDO $pdo, string $bookingId, ?string $paymentIn
         ':id' => $bookingId,
     ]);
 }
+
+function cancel_unpaid_booking(PDO $pdo, string $bookingId): void
+{
+    $bookingStmt = $pdo->prepare(
+        'select id, payment_status
+         from public.bookings
+         where id = :id
+         for update'
+    );
+    $bookingStmt->execute([':id' => $bookingId]);
+    $booking = $bookingStmt->fetch();
+
+    if (!$booking) {
+        throw new RuntimeException('Reserva no encontrada');
+    }
+
+    if (($booking['payment_status'] ?? '') === 'paid') {
+        throw new RuntimeException('La reserva ya esta pagada. Usa el flujo de reembolso para liberar cupo.');
+    }
+
+    $updateStmt = $pdo->prepare(
+        "update public.bookings
+         set status = 'cancelled',
+             payment_status = 'unpaid',
+             updated_at = timezone('utc', now())
+         where id = :id"
+    );
+    $updateStmt->execute([':id' => $bookingId]);
+}
+
+function refund_booking(PDO $pdo, string $bookingId): void
+{
+    $bookingStmt = $pdo->prepare(
+        'select id, departure_id, seats_reserved, payment_status
+         from public.bookings
+         where id = :id
+         for update'
+    );
+    $bookingStmt->execute([':id' => $bookingId]);
+    $booking = $bookingStmt->fetch();
+
+    if (!$booking) {
+        throw new RuntimeException('Reserva no encontrada');
+    }
+
+    if (($booking['payment_status'] ?? '') !== 'paid') {
+        throw new RuntimeException('Solo puedes reembolsar reservas pagadas.');
+    }
+
+    $departureStmt = $pdo->prepare(
+        'select id, capacity, booked_count, status
+         from public.departures
+         where id = :id
+         for update'
+    );
+    $departureStmt->execute([':id' => $booking['departure_id']]);
+    $departure = $departureStmt->fetch();
+
+    if (!$departure) {
+        throw new RuntimeException('La salida asociada ya no existe.');
+    }
+
+    $seatsReserved = (int) $booking['seats_reserved'];
+    $bookedCount = (int) ($departure['booked_count'] ?? 0);
+    $capacity = (int) ($departure['capacity'] ?? 0);
+    $newBookedCount = max($bookedCount - $seatsReserved, 0);
+
+    $departureStatus = (string) ($departure['status'] ?? 'open');
+    if ($departureStatus !== 'cancelled') {
+        $departureStatus = $newBookedCount >= $capacity ? 'sold_out' : 'open';
+    }
+
+    $departureUpdateStmt = $pdo->prepare(
+        'update public.departures
+         set booked_count = :booked_count,
+             status = :status,
+             updated_at = timezone('utc', now())
+         where id = :id'
+    );
+    $departureUpdateStmt->execute([
+        ':booked_count' => $newBookedCount,
+        ':status' => $departureStatus,
+        ':id' => $departure['id'],
+    ]);
+
+    $bookingUpdateStmt = $pdo->prepare(
+        "update public.bookings
+         set status = 'refunded',
+             payment_status = 'refunded',
+             updated_at = timezone('utc', now())
+         where id = :id"
+    );
+    $bookingUpdateStmt->execute([':id' => $bookingId]);
+}
