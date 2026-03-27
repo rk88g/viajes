@@ -24,6 +24,10 @@
     adminAlert: document.querySelector('#adminAlert'),
     authSection: document.querySelector('#authSection'),
     adminApp: document.querySelector('#adminApp'),
+    adminSidebar: document.querySelector('#adminSidebar'),
+    adminSidebarToggle: document.querySelector('#adminSidebarToggle'),
+    adminSectionNav: document.querySelector('#adminSectionNav'),
+    adminSyncLabel: document.querySelector('#adminSyncLabel'),
     loginForm: document.querySelector('#loginForm'),
     logoutButton: document.querySelector('#logoutButton'),
     adminUserLabel: document.querySelector('#adminUserLabel'),
@@ -57,7 +61,10 @@
     messages: [],
     incomeEntries: [],
     incomeSummary: [],
-    settings: null
+    settings: null,
+    activeSectionId: 'section-viajes',
+    autoRefreshTimer: null,
+    refreshInFlight: false
   };
 
   function defaultHomepageContent() {
@@ -401,6 +408,7 @@
     elements.adminApp.classList.remove('hidden');
     elements.logoutButton.style.display = 'inline-flex';
     elements.adminUserLabel.textContent = admin?.email || 'Admin';
+    setSyncStatus('Actualizacion automatica activa');
   }
 
   function actionBadge(value) {
@@ -416,12 +424,33 @@
     return `<span class="pill pill-muted">${value || 'n/a'}</span>`;
   }
 
+  function pendingBookingsCount() {
+    return state.bookings.filter((booking) => {
+      const status = String(booking.status || '');
+      const paymentStatus = String(booking.payment_status || '');
+
+      if (status === 'cancelled' || status === 'confirmed' || status === 'refunded') {
+        return false;
+      }
+
+      return status === 'pending_payment' || paymentStatus === 'unpaid';
+    }).length;
+  }
+
+  function setSyncStatus(message, variant = 'ok') {
+    if (!elements.adminSyncLabel) {
+      return;
+    }
+
+    elements.adminSyncLabel.textContent = message;
+    elements.adminSyncLabel.classList.remove('admin-sync-updating', 'admin-sync-ok');
+    elements.adminSyncLabel.classList.add(variant === 'updating' ? 'admin-sync-updating' : 'admin-sync-ok');
+  }
+
   function renderMetrics() {
     elements.metricTrips.textContent = state.trips.filter((trip) => trip.published).length;
     elements.metricDepartures.textContent = state.departures.filter((departure) => departure.status === 'open').length;
-    elements.metricBookings.textContent = state.bookings.filter(
-      (booking) => booking.status === 'pending_payment' || booking.payment_status === 'unpaid'
-    ).length;
+    elements.metricBookings.textContent = pendingBookingsCount();
     elements.metricMessages.textContent = state.messages.filter((message) => message.status === 'new').length;
 
     const currentMonthKey = new Date().toISOString().slice(0, 7);
@@ -658,6 +687,59 @@
     );
   }
 
+  function applyDashboardData(data, options = {}) {
+    const { hydrateSettings = false, resetIncomeDraft = false } = options;
+
+    state.settings = normalizeSettings(data.settings);
+    state.trips = data.trips || [];
+    state.departures = data.departures || [];
+    state.bookings = data.bookings || [];
+    state.messages = data.messages || [];
+    state.incomeEntries = data.income_entries || [];
+    state.incomeSummary = data.income_summary || [];
+    renderMetrics();
+    renderTripOptions();
+    renderTripsTable();
+    renderDeparturesTable();
+    renderBookingsTable();
+    renderMessagesTable();
+    renderIncomeTable();
+    renderIncomeSummary();
+
+    if (hydrateSettings) {
+      fillSettingsForm();
+    }
+
+    if (resetIncomeDraft) {
+      resetIncomeForm();
+    }
+  }
+
+  function sectionButtons() {
+    return Array.from(elements.adminSectionNav?.querySelectorAll('[data-section-target]') || []);
+  }
+
+  function sectionPanels() {
+    return Array.from(document.querySelectorAll('[data-admin-section]'));
+  }
+
+  function activateSection(sectionId, options = {}) {
+    const { scroll = false } = options;
+    state.activeSectionId = sectionId || state.activeSectionId;
+
+    sectionButtons().forEach((button) => {
+      button.classList.toggle('is-active', button.dataset.sectionTarget === state.activeSectionId);
+    });
+
+    sectionPanels().forEach((panel) => {
+      panel.classList.toggle('is-active', panel.id === state.activeSectionId);
+    });
+
+    if (scroll) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
   function resetTripForm() {
     elements.tripForm.reset();
     elements.tripForm.trip_id.value = '';
@@ -703,6 +785,7 @@
     elements.tripForm.tags_csv.value = (trip.tags || []).join(', ');
     elements.tripForm.featured.checked = Boolean(trip.featured);
     elements.tripForm.published.checked = Boolean(trip.published);
+    activateSection('section-viajes');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -721,6 +804,7 @@
     elements.departureForm.promo_price.value = departure.promo_price || '';
     elements.departureForm.status.value = departure.status || 'open';
     elements.departureForm.notes.value = departure.notes || '';
+    activateSection('section-salidas');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -741,29 +825,56 @@
     elements.incomeForm.payment_method.value = income.payment_method || '';
     elements.incomeForm.reference_code.value = income.reference_code || '';
     elements.incomeForm.notes.value = income.notes || '';
+    activateSection('section-ingreso-mensual');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  async function refreshAndRender(successMessage) {
-    const data = await request(API.bootstrap, { method: 'GET' });
-    state.settings = normalizeSettings(data.settings);
-    state.trips = data.trips || [];
-    state.departures = data.departures || [];
-    state.bookings = data.bookings || [];
-    state.messages = data.messages || [];
-    state.incomeEntries = data.income_entries || [];
-    state.incomeSummary = data.income_summary || [];
-    renderMetrics();
-    renderTripOptions();
-    renderTripsTable();
-    renderDeparturesTable();
-    renderBookingsTable();
-    renderMessagesTable();
-    renderIncomeTable();
-    renderIncomeSummary();
-    fillSettingsForm();
-    resetIncomeForm();
-    setAlert(successMessage || 'Dashboard actualizado.');
+  async function loadDashboard(options = {}) {
+    const {
+      successMessage = '',
+      showAlert = false,
+      hydrateSettings = false,
+      resetIncomeDraft = false,
+      silent = false
+    } = options;
+
+    if (state.refreshInFlight) {
+      return;
+    }
+
+    state.refreshInFlight = true;
+    if (silent) {
+      setSyncStatus('Sincronizando...', 'updating');
+    }
+
+    try {
+      const data = await request(API.bootstrap, { method: 'GET' });
+      applyDashboardData(data, { hydrateSettings, resetIncomeDraft });
+      activateSection(state.activeSectionId);
+
+      if (showAlert) {
+        setAlert(successMessage || 'Dashboard actualizado.');
+      }
+
+      if (silent) {
+        const timeLabel = new Intl.DateTimeFormat('es-MX', {
+          hour: '2-digit',
+          minute: '2-digit'
+        }).format(new Date());
+        setSyncStatus(`Actualizado ${timeLabel}`);
+      }
+    } finally {
+      state.refreshInFlight = false;
+    }
+  }
+
+  async function refreshAndRender(successMessage, options = {}) {
+    await loadDashboard({
+      successMessage,
+      showAlert: true,
+      hydrateSettings: Boolean(options.hydrateSettings),
+      resetIncomeDraft: Boolean(options.resetIncomeDraft)
+    });
   }
 
   async function bootSession() {
@@ -771,26 +882,14 @@
 
     if (storedToken) {
       try {
-        const data = await request(API.bootstrap, { method: 'GET' });
-        state.settings = normalizeSettings(data.settings);
-        state.trips = data.trips || [];
-        state.departures = data.departures || [];
-        state.bookings = data.bookings || [];
-        state.messages = data.messages || [];
-        state.incomeEntries = data.income_entries || [];
-        state.incomeSummary = data.income_summary || [];
-        renderMetrics();
-        renderTripOptions();
-        renderTripsTable();
-        renderDeparturesTable();
-        renderBookingsTable();
-        renderMessagesTable();
-        renderIncomeTable();
-        renderIncomeSummary();
-        fillSettingsForm();
-        resetIncomeForm();
         showAdminScreen({ email: 'Administrador' });
-        setAlert('Sesion iniciada. Ya puedes administrar paquetes, salidas y mensajes.');
+        await loadDashboard({
+          successMessage: 'Sesion iniciada. Ya puedes administrar paquetes, salidas y mensajes.',
+          showAlert: true,
+          hydrateSettings: true,
+          resetIncomeDraft: true,
+          silent: true
+        });
         return;
       } catch (error) {
         setAdminToken(null);
@@ -806,7 +905,10 @@
       }
 
       showAdminScreen(data.admin);
-      await refreshAndRender('Sesion iniciada. Ya puedes administrar paquetes, salidas y mensajes.');
+      await refreshAndRender('Sesion iniciada. Ya puedes administrar paquetes, salidas y mensajes.', {
+        hydrateSettings: true,
+        resetIncomeDraft: true
+      });
     } catch (error) {
       showAuthScreen(error.message, 'error');
     }
@@ -827,7 +929,10 @@
       setAdminToken(response.token || null);
       elements.loginForm.reset();
       showAdminScreen(response.admin || { email });
-      await refreshAndRender('Sesion iniciada. Ya puedes administrar paquetes, salidas y mensajes.');
+      await refreshAndRender('Sesion iniciada. Ya puedes administrar paquetes, salidas y mensajes.', {
+        hydrateSettings: true,
+        resetIncomeDraft: true
+      });
     } catch (error) {
       setAdminToken(null);
       showAuthScreen(error.message, 'error');
@@ -931,7 +1036,7 @@
         method: 'POST',
         body: JSON.stringify(payload)
       });
-      await refreshAndRender('Configuracion guardada.');
+      await refreshAndRender('Configuracion guardada.', { hydrateSettings: true });
     } catch (error) {
       setAlert(error.message, 'error');
     }
@@ -963,7 +1068,7 @@
         body: JSON.stringify(payload)
       });
       resetIncomeForm();
-      await refreshAndRender('Ingreso guardado correctamente.');
+      await refreshAndRender('Ingreso guardado correctamente.', { resetIncomeDraft: true });
     } catch (error) {
       setAlert(error.message, 'error');
     }
@@ -1084,6 +1189,54 @@
     });
   }
 
+  function setupSectionNavigation() {
+    if (!elements.adminSectionNav) {
+      return;
+    }
+
+    sectionButtons().forEach((button) => {
+      button.addEventListener('click', () => {
+        activateSection(button.dataset.sectionTarget, { scroll: true });
+      });
+    });
+
+    elements.adminSidebarToggle?.addEventListener('click', () => {
+      elements.adminApp.classList.toggle('is-collapsed');
+    });
+  }
+
+  function startAutoRefresh() {
+    if (state.autoRefreshTimer) {
+      window.clearInterval(state.autoRefreshTimer);
+    }
+
+    state.autoRefreshTimer = window.setInterval(() => {
+      if (!state.admin || document.hidden) {
+        return;
+      }
+
+      loadDashboard({ silent: true }).catch(() => {
+        setSyncStatus('Sincronizacion pendiente', 'updating');
+      });
+    }, 30000);
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && state.admin) {
+        loadDashboard({ silent: true }).catch(() => {
+          setSyncStatus('Sincronizacion pendiente', 'updating');
+        });
+      }
+    });
+
+    window.addEventListener('focus', () => {
+      if (state.admin) {
+        loadDashboard({ silent: true }).catch(() => {
+          setSyncStatus('Sincronizacion pendiente', 'updating');
+        });
+      }
+    });
+  }
+
   function bindEvents() {
     elements.loginForm.addEventListener('submit', submitLogin);
     elements.logoutButton.addEventListener('click', async () => {
@@ -1157,6 +1310,8 @@
   async function init() {
     bindEvents();
     setupScrollTopButton();
+    setupSectionNavigation();
+    startAutoRefresh();
     await bootSession();
   }
 

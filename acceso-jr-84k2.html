@@ -60,443 +60,481 @@
       </section>
 
       <section class="admin-app hidden" id="adminApp">
-        <section class="metrics-grid" id="metricsGrid">
-          <article>
-            <span>Viajes publicados</span>
-            <strong id="metricTrips">0</strong>
-          </article>
-          <article>
-            <span>Proximas salidas</span>
-            <strong id="metricDepartures">0</strong>
-          </article>
-          <article>
-            <span>Reservas pendientes</span>
-            <strong id="metricBookings">0</strong>
-          </article>
-          <article>
-            <span>Mensajes nuevos</span>
-            <strong id="metricMessages">0</strong>
-          </article>
-          <article>
-            <span>Ingresos del mes</span>
-            <strong id="metricIncome">$0</strong>
-          </article>
-        </section>
-
-        <section class="admin-grid">
-          <div class="admin-panel">
-            <div class="panel-head">
-              <div>
-                <span class="eyebrow">Viajes</span>
-                <h2>Crear o editar viaje</h2>
-              </div>
-              <button class="button button-secondary" id="resetTripButton" type="button">Nuevo viaje</button>
-            </div>
-            <form id="tripForm" class="stack-form">
-              <input type="hidden" name="trip_id" />
-              <label>
-                Nombre del viaje
-                <input type="text" name="title" required />
-              </label>
-              <label>
-                Slug
-                <input type="text" name="slug" placeholder="ruta-tequila-premium" />
-              </label>
-              <label>
-                Destino
-                <input type="text" name="destination" required />
-              </label>
-              <label>
-                Punto de encuentro
-                <input type="text" name="meeting_point" required />
-              </label>
-              <label>
-                Duracion
-                <input type="text" name="duration_text" placeholder="1 dia / 10 horas" required />
-              </label>
-              <label>
-                Precio base
-                <input type="number" name="price" min="0" step="0.01" required />
-              </label>
-              <label>
-                Imagen principal
-                <input type="url" name="hero_image_url" placeholder="https://..." />
-              </label>
-              <label>
-                Descripcion corta
-                <textarea name="short_description" rows="3" required></textarea>
-              </label>
-              <label>
-                Descripcion completa
-                <textarea name="description" rows="4" required></textarea>
-              </label>
-              <label>
-                Incluye
-                <input type="text" name="includes_csv" placeholder="Transporte, guia, degustacion" />
-              </label>
-              <label>
-                Itinerario
-                <input type="text" name="itinerary_csv" placeholder="Salida, primera parada, comida, regreso" />
-              </label>
-              <label>
-                Etiquetas
-                <input type="text" name="tags_csv" placeholder="Pueblo magico, fin de semana, familiar" />
-              </label>
-              <div class="checkbox-row">
-                <label><input type="checkbox" name="featured" /> Destacado</label>
-                <label><input type="checkbox" name="published" checked /> Publicado</label>
-              </div>
-              <button class="button button-primary" type="submit">Guardar viaje</button>
-            </form>
-          </div>
-
-          <div class="admin-panel">
-            <div class="panel-head">
-              <div>
-                <span class="eyebrow">Salidas</span>
-                <h2>Fechas, cupos y precio final</h2>
-              </div>
-              <button class="button button-secondary" id="resetDepartureButton" type="button">Nueva salida</button>
-            </div>
-            <form id="departureForm" class="stack-form">
-              <input type="hidden" name="departure_id" />
-              <label>
-                Viaje relacionado
-                <select name="trip_id" id="departureTripSelect" required>
-                  <option value="">Selecciona un viaje</option>
-                </select>
-              </label>
-              <label>
-                Fecha de salida
-                <input type="date" name="departure_date" required />
-              </label>
-              <label>
-                Fecha de regreso
-                <input type="date" name="return_date" />
-              </label>
-              <label>
-                Cupo total
-                <input type="number" name="capacity" min="1" required />
-              </label>
-              <label>
-                Lugares apartados
-                <input type="number" name="booked_count" min="0" value="0" required />
-              </label>
-              <label>
-                Precio promocional
-                <input type="number" name="promo_price" min="0" step="0.01" />
-              </label>
-              <label>
-                Estado
-                <select name="status">
-                  <option value="open">Abierta</option>
-                  <option value="sold_out">Sold out</option>
-                  <option value="cancelled">Cancelada</option>
-                </select>
-              </label>
-              <label>
-                Notas
-                <textarea name="notes" rows="3" placeholder="Observaciones internas o detalles adicionales"></textarea>
-              </label>
-              <button class="button button-primary" type="submit">Guardar salida</button>
-            </form>
-          </div>
-        </section>
-
-        <section class="admin-grid">
-          <div class="admin-panel">
-            <div class="panel-head">
-              <div>
-                <span class="eyebrow">Finanzas</span>
-                <h2>Ingresos mensuales</h2>
-              </div>
-              <button class="button button-secondary" id="resetIncomeButton" type="button">Nuevo ingreso</button>
-            </div>
-            <form id="incomeForm" class="stack-form">
-              <input type="hidden" name="income_id" />
-              <label>
-                Concepto
-                <input type="text" name="concept" required />
-              </label>
-              <label>
-                Categoria
-                <input type="text" name="category" placeholder="Reservas, Anticipo, Extra, Convenio" required />
-              </label>
-              <label>
-                Cliente o referencia
-                <input type="text" name="customer_name" placeholder="Nombre del cliente o empresa" />
-              </label>
-              <label>
-                Cantidad
-                <input type="number" name="amount" min="0" step="0.01" required />
-              </label>
-              <label>
-                Estatus
-                <select name="status">
-                  <option value="received">Recibido</option>
-                  <option value="pending">Pendiente</option>
-                  <option value="cancelled">Cancelado</option>
-                  <option value="refunded">Reembolsado</option>
-                </select>
-              </label>
-              <label>
-                Fecha de pago
-                <input type="date" name="payment_date" required />
-              </label>
-              <label>
-                Fecha objetivo o vencimiento
-                <input type="date" name="due_date" />
-              </label>
-              <label>
-                Metodo de pago
-                <input type="text" name="payment_method" placeholder="Transferencia, Efectivo, Stripe, SPEI" />
-              </label>
-              <label>
-                Referencia
-                <input type="text" name="reference_code" placeholder="Folio, transaccion o comprobante" />
-              </label>
-              <label>
-                Notas internas
-                <textarea name="notes" rows="4" placeholder="Detalle del ingreso, acuerdo comercial o seguimiento"></textarea>
-              </label>
-              <button class="button button-primary" type="submit">Guardar ingreso</button>
-            </form>
-          </div>
-
-          <div class="admin-panel">
-            <div class="panel-head">
-              <div>
-                <span class="eyebrow">Resumen</span>
-                <h2>Totales por mes</h2>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Mes</th>
-                    <th>Recibido</th>
-                    <th>Pendiente</th>
-                    <th>Reembolsado</th>
-                    <th>Movimientos</th>
-                  </tr>
-                </thead>
-                <tbody id="incomeSummaryTableBody">
-                  <tr>
-                    <td colspan="5">Sin resumen disponible.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <section class="admin-grid">
-          <div class="admin-panel">
-            <div class="panel-head">
-              <div>
-                <span class="eyebrow">Ingresos</span>
-                <h2>Movimientos registrados</h2>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Concepto y detalle</th>
-                    <th>Pago y vencimiento</th>
-                    <th>Monto</th>
-                    <th>Estatus</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="incomeTableBody">
-                  <tr>
-                    <td colspan="5">Sin ingresos registrados.</td>
-                  </tr>
-                </tbody>
-              </table>
+        <aside class="admin-sidebar" id="adminSidebar">
+          <div class="admin-sidebar-top">
+            <button class="admin-sidebar-toggle" id="adminSidebarToggle" type="button" aria-label="Colapsar menu">
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+            <div class="admin-sidebar-copy">
+              <strong>Panel operativo</strong>
+              <small id="adminSyncLabel">Actualizacion automatica activa</small>
             </div>
           </div>
 
-          <div class="admin-panel">
-            <div class="panel-head">
-              <div>
-                <span class="eyebrow">Configuracion</span>
-                <h2>Textos del sitio y soporte</h2>
-              </div>
-            </div>
-            <form id="settingsForm" class="stack-form">
-              <label>
-                Nombre comercial
-                <input type="text" name="company_name" required />
-              </label>
-              <label>
-                Badge principal
-                <input type="text" name="hero_badge" required />
-              </label>
-              <label>
-                Titulo principal
-                <textarea name="hero_title" rows="3" required></textarea>
-              </label>
-              <label>
-                Subtitulo principal
-                <textarea name="hero_subtitle" rows="4" required></textarea>
-              </label>
-              <label>
-                Correo de soporte
-                <input type="email" name="support_email" required />
-              </label>
-              <label>
-                Telefono
-                <input type="text" name="support_phone" required />
-              </label>
-              <label>
-                WhatsApp en formato internacional
-                <input type="text" name="whatsapp_number" placeholder="523312345678" required />
-              </label>
-              <label>
-                Mensaje por defecto de WhatsApp
-                <input type="text" name="whatsapp_message" required />
-              </label>
-              <label class="checkbox-row">
-                <input type="checkbox" name="chatbot_enabled" />
-                Activar chatbot embebido
-              </label>
-              <label>
-                Codigo de chatbot
-                <textarea
-                  name="chatbot_embed_code"
-                  rows="6"
-                  placeholder="Pega aqui el script de Tawk, Crisp, Landbot o el proveedor que vayas a usar"
-                ></textarea>
-              </label>
-              <label>
-                Contenido dinamico del home en JSON
-                <textarea
-                  class="json-textarea"
-                  name="homepage_content_json"
-                  rows="22"
-                  spellcheck="false"
-                  placeholder="{ &quot;hero&quot;: { &quot;eyebrow&quot;: &quot;Tours en Jalisco&quot; } }"
-                ></textarea>
-              </label>
-              <p class="admin-help">
-                Aqui puedes editar todas las secciones dinamicas del home. Si quieres cambiar titulos, cards, FAQ, nav o footer, hazlo en este JSON.
-              </p>
-              <button class="button button-primary" type="submit">Guardar configuracion</button>
-            </form>
-          </div>
-        </section>
+          <nav class="admin-section-nav" id="adminSectionNav" aria-label="Secciones del admin">
+            <button class="is-active" type="button" data-section-target="section-viajes">Viajes</button>
+            <button type="button" data-section-target="section-salidas">Salidas</button>
+            <button type="button" data-section-target="section-resumen">Resumen</button>
+            <button type="button" data-section-target="section-ingreso-mensual">Ingreso Mensual</button>
+            <button type="button" data-section-target="section-ingresos">Ingresos</button>
+            <button type="button" data-section-target="section-reservas-mensajes">Reservas y mensajes pendientes</button>
+            <button type="button" data-section-target="section-inventario">Inventario</button>
+            <button type="button" data-section-target="section-calendario">Calendario</button>
+            <button type="button" data-section-target="section-configuracion">Configuracion</button>
+          </nav>
+        </aside>
 
-        <section class="admin-grid">
-          <div class="admin-panel">
-            <div class="panel-head">
-              <div>
-                <span class="eyebrow">Actividad</span>
-                <h2>Reservas y mensajes recientes</h2>
-              </div>
-            </div>
-            <div class="data-block">
-              <h3>Reservas</h3>
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Cliente</th>
-                      <th>Salida</th>
-                      <th>Lugares</th>
-                      <th>Total</th>
-                      <th>Pago</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody id="bookingsTableBody">
-                    <tr>
-                      <td colspan="6">Sin datos.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div class="data-block">
-              <h3>Mensajes</h3>
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Nombre</th>
-                      <th>Contacto</th>
-                      <th>Mensaje y notas</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody id="messagesTableBody">
-                    <tr>
-                      <td colspan="4">Sin datos.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </section>
+        <div class="admin-content">
+          <section class="metrics-grid" id="metricsGrid">
+            <article>
+              <span>Viajes publicados</span>
+              <strong id="metricTrips">0</strong>
+            </article>
+            <article>
+              <span>Proximas salidas</span>
+              <strong id="metricDepartures">0</strong>
+            </article>
+            <article>
+              <span>Reservas pendientes</span>
+              <strong id="metricBookings">0</strong>
+            </article>
+            <article>
+              <span>Mensajes nuevos</span>
+              <strong id="metricMessages">0</strong>
+            </article>
+            <article>
+              <span>Ingresos del mes</span>
+              <strong id="metricIncome">$0</strong>
+            </article>
+          </section>
 
-        <section class="admin-grid">
-          <div class="admin-panel">
-            <div class="panel-head">
-              <div>
-                <span class="eyebrow">Inventario</span>
-                <h2>Viajes registrados</h2>
+          <div class="admin-sections">
+            <section class="admin-section is-active" id="section-viajes" data-admin-section>
+              <div class="admin-panel admin-panel-full">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">Viajes</span>
+                    <h2>Crear o editar viaje</h2>
+                  </div>
+                  <button class="button button-secondary" id="resetTripButton" type="button">Nuevo viaje</button>
+                </div>
+                <form id="tripForm" class="stack-form">
+                  <input type="hidden" name="trip_id" />
+                  <label>
+                    Nombre del viaje
+                    <input type="text" name="title" required />
+                  </label>
+                  <label>
+                    Slug
+                    <input type="text" name="slug" placeholder="ruta-tequila-premium" />
+                  </label>
+                  <label>
+                    Destino
+                    <input type="text" name="destination" required />
+                  </label>
+                  <label>
+                    Punto de encuentro
+                    <input type="text" name="meeting_point" required />
+                  </label>
+                  <label>
+                    Duracion
+                    <input type="text" name="duration_text" placeholder="1 dia / 10 horas" required />
+                  </label>
+                  <label>
+                    Precio base
+                    <input type="number" name="price" min="0" step="0.01" required />
+                  </label>
+                  <label>
+                    Imagen principal
+                    <input type="url" name="hero_image_url" placeholder="https://..." />
+                  </label>
+                  <label>
+                    Descripcion corta
+                    <textarea name="short_description" rows="3" required></textarea>
+                  </label>
+                  <label>
+                    Descripcion completa
+                    <textarea name="description" rows="4" required></textarea>
+                  </label>
+                  <label>
+                    Incluye
+                    <input type="text" name="includes_csv" placeholder="Transporte, guia, degustacion" />
+                  </label>
+                  <label>
+                    Itinerario
+                    <input type="text" name="itinerary_csv" placeholder="Salida, primera parada, comida, regreso" />
+                  </label>
+                  <label>
+                    Etiquetas
+                    <input type="text" name="tags_csv" placeholder="Pueblo magico, fin de semana, familiar" />
+                  </label>
+                  <div class="checkbox-row">
+                    <label><input type="checkbox" name="featured" /> Destacado</label>
+                    <label><input type="checkbox" name="published" checked /> Publicado</label>
+                  </div>
+                  <button class="button button-primary" type="submit">Guardar viaje</button>
+                </form>
               </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Viaje</th>
-                    <th>Destino</th>
-                    <th>Precio</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="tripsTableBody">
-                  <tr>
-                    <td colspan="5">Sin viajes registrados.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+            </section>
 
-          <div class="admin-panel">
-            <div class="panel-head">
-              <div>
-                <span class="eyebrow">Calendario</span>
-                <h2>Salidas programadas</h2>
+            <section class="admin-section" id="section-salidas" data-admin-section>
+              <div class="admin-panel admin-panel-full">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">Salidas</span>
+                    <h2>Fechas, cupos y precio final</h2>
+                  </div>
+                  <button class="button button-secondary" id="resetDepartureButton" type="button">Nueva salida</button>
+                </div>
+                <form id="departureForm" class="stack-form">
+                  <input type="hidden" name="departure_id" />
+                  <label>
+                    Viaje relacionado
+                    <select name="trip_id" id="departureTripSelect" required>
+                      <option value="">Selecciona un viaje</option>
+                    </select>
+                  </label>
+                  <label>
+                    Fecha de salida
+                    <input type="date" name="departure_date" required />
+                  </label>
+                  <label>
+                    Fecha de regreso
+                    <input type="date" name="return_date" />
+                  </label>
+                  <label>
+                    Cupo total
+                    <input type="number" name="capacity" min="1" required />
+                  </label>
+                  <label>
+                    Lugares apartados
+                    <input type="number" name="booked_count" min="0" value="0" required />
+                  </label>
+                  <label>
+                    Precio promocional
+                    <input type="number" name="promo_price" min="0" step="0.01" />
+                  </label>
+                  <label>
+                    Estado
+                    <select name="status">
+                      <option value="open">Abierta</option>
+                      <option value="sold_out">Sold out</option>
+                      <option value="cancelled">Cancelada</option>
+                    </select>
+                  </label>
+                  <label>
+                    Notas
+                    <textarea name="notes" rows="3" placeholder="Observaciones internas o detalles adicionales"></textarea>
+                  </label>
+                  <button class="button button-primary" type="submit">Guardar salida</button>
+                </form>
               </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Viaje</th>
-                    <th>Fecha</th>
-                    <th>Cupo</th>
-                    <th>Precio final</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="departuresTableBody">
-                  <tr>
-                    <td colspan="5">Sin salidas registradas.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            </section>
+
+            <section class="admin-section" id="section-resumen" data-admin-section>
+              <div class="admin-panel admin-panel-full">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">Resumen</span>
+                    <h2>Totales por mes</h2>
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Mes</th>
+                        <th>Recibido</th>
+                        <th>Pendiente</th>
+                        <th>Reembolsado</th>
+                        <th>Movimientos</th>
+                      </tr>
+                    </thead>
+                    <tbody id="incomeSummaryTableBody">
+                      <tr>
+                        <td colspan="5">Sin resumen disponible.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-section" id="section-ingreso-mensual" data-admin-section>
+              <div class="admin-panel admin-panel-full">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">Ingreso mensual</span>
+                    <h2>Registrar movimiento manual</h2>
+                  </div>
+                  <button class="button button-secondary" id="resetIncomeButton" type="button">Nuevo ingreso</button>
+                </div>
+                <form id="incomeForm" class="stack-form">
+                  <input type="hidden" name="income_id" />
+                  <label>
+                    Concepto
+                    <input type="text" name="concept" required />
+                  </label>
+                  <label>
+                    Categoria
+                    <input type="text" name="category" placeholder="Reservas, Anticipo, Extra, Convenio" required />
+                  </label>
+                  <label>
+                    Cliente o referencia
+                    <input type="text" name="customer_name" placeholder="Nombre del cliente o empresa" />
+                  </label>
+                  <label>
+                    Cantidad
+                    <input type="number" name="amount" min="0" step="0.01" required />
+                  </label>
+                  <label>
+                    Estatus
+                    <select name="status">
+                      <option value="received">Recibido</option>
+                      <option value="pending">Pendiente</option>
+                      <option value="cancelled">Cancelado</option>
+                      <option value="refunded">Reembolsado</option>
+                    </select>
+                  </label>
+                  <label>
+                    Fecha de pago
+                    <input type="date" name="payment_date" required />
+                  </label>
+                  <label>
+                    Fecha objetivo o vencimiento
+                    <input type="date" name="due_date" />
+                  </label>
+                  <label>
+                    Metodo de pago
+                    <input type="text" name="payment_method" placeholder="Transferencia, Efectivo, Stripe, SPEI" />
+                  </label>
+                  <label>
+                    Referencia
+                    <input type="text" name="reference_code" placeholder="Folio, transaccion o comprobante" />
+                  </label>
+                  <label>
+                    Notas internas
+                    <textarea name="notes" rows="4" placeholder="Detalle del ingreso, acuerdo comercial o seguimiento"></textarea>
+                  </label>
+                  <button class="button button-primary" type="submit">Guardar ingreso</button>
+                </form>
+              </div>
+            </section>
+
+            <section class="admin-section" id="section-ingresos" data-admin-section>
+              <div class="admin-panel admin-panel-full">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">Ingresos</span>
+                    <h2>Movimientos registrados</h2>
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Concepto y detalle</th>
+                        <th>Pago y vencimiento</th>
+                        <th>Monto</th>
+                        <th>Estatus</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="incomeTableBody">
+                      <tr>
+                        <td colspan="5">Sin ingresos registrados.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-section" id="section-reservas-mensajes" data-admin-section>
+              <div class="admin-panel admin-panel-full">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">Actividad</span>
+                    <h2>Reservas y mensajes pendientes</h2>
+                  </div>
+                </div>
+                <div class="data-block">
+                  <h3>Reservas</h3>
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Cliente</th>
+                          <th>Salida</th>
+                          <th>Lugares</th>
+                          <th>Total</th>
+                          <th>Pago</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody id="bookingsTableBody">
+                        <tr>
+                          <td colspan="6">Sin datos.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="data-block">
+                  <h3>Mensajes</h3>
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Nombre</th>
+                          <th>Contacto</th>
+                          <th>Mensaje y notas</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody id="messagesTableBody">
+                        <tr>
+                          <td colspan="4">Sin datos.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-section" id="section-inventario" data-admin-section>
+              <div class="admin-panel admin-panel-full">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">Inventario</span>
+                    <h2>Viajes registrados</h2>
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Viaje</th>
+                        <th>Destino</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tripsTableBody">
+                      <tr>
+                        <td colspan="5">Sin viajes registrados.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-section" id="section-calendario" data-admin-section>
+              <div class="admin-panel admin-panel-full">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">Calendario</span>
+                    <h2>Salidas programadas</h2>
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Viaje</th>
+                        <th>Fecha</th>
+                        <th>Cupo</th>
+                        <th>Precio final</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="departuresTableBody">
+                      <tr>
+                        <td colspan="5">Sin salidas registradas.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-section" id="section-configuracion" data-admin-section>
+              <div class="admin-panel admin-panel-full">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">Configuracion</span>
+                    <h2>Textos del sitio y soporte</h2>
+                  </div>
+                </div>
+                <form id="settingsForm" class="stack-form">
+                  <label>
+                    Nombre comercial
+                    <input type="text" name="company_name" required />
+                  </label>
+                  <label>
+                    Badge principal
+                    <input type="text" name="hero_badge" required />
+                  </label>
+                  <label>
+                    Titulo principal
+                    <textarea name="hero_title" rows="3" required></textarea>
+                  </label>
+                  <label>
+                    Subtitulo principal
+                    <textarea name="hero_subtitle" rows="4" required></textarea>
+                  </label>
+                  <label>
+                    Correo de soporte
+                    <input type="email" name="support_email" required />
+                  </label>
+                  <label>
+                    Telefono
+                    <input type="text" name="support_phone" required />
+                  </label>
+                  <label>
+                    WhatsApp en formato internacional
+                    <input type="text" name="whatsapp_number" placeholder="523312345678" required />
+                  </label>
+                  <label>
+                    Mensaje por defecto de WhatsApp
+                    <input type="text" name="whatsapp_message" required />
+                  </label>
+                  <label class="checkbox-row">
+                    <input type="checkbox" name="chatbot_enabled" />
+                    Activar chatbot embebido
+                  </label>
+                  <label>
+                    Codigo de chatbot
+                    <textarea
+                      name="chatbot_embed_code"
+                      rows="6"
+                      placeholder="Pega aqui el script de Tawk, Crisp, Landbot o el proveedor que vayas a usar"
+                    ></textarea>
+                  </label>
+                  <label>
+                    Contenido dinamico del home en JSON
+                    <textarea
+                      class="json-textarea"
+                      name="homepage_content_json"
+                      rows="22"
+                      spellcheck="false"
+                      placeholder="{ &quot;hero&quot;: { &quot;eyebrow&quot;: &quot;Tours en Jalisco&quot; } }"
+                    ></textarea>
+                  </label>
+                  <p class="admin-help">
+                    Aqui puedes editar todas las secciones dinamicas del home. Si quieres cambiar titulos, cards, FAQ, nav o footer, hazlo en este JSON.
+                  </p>
+                  <button class="button button-primary" type="submit">Guardar configuracion</button>
+                </form>
+              </div>
+            </section>
           </div>
-        </section>
+        </div>
       </section>
     </main>
 
