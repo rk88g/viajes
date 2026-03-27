@@ -15,7 +15,7 @@ try {
     $trips = array_map(static fn(array $row): array => map_trip($row), $tripsStmt->fetchAll());
 
     $departuresStmt = $pdo->query(
-        'select
+        "select
             d.id,
             d.trip_id,
             d.departure_date,
@@ -25,10 +25,10 @@ try {
             d.promo_price,
             d.status,
             d.notes,
-            json_build_object(''title'', t.title, ''destination'', t.destination, ''price'', t.price) as trip
+            json_build_object('title', t.title, 'destination', t.destination, 'price', t.price) as trip
          from public.departures d
          inner join public.trips t on t.id = d.trip_id
-         order by d.departure_date asc'
+         order by d.departure_date asc"
     );
     $departures = array_map(static fn(array $row): array => map_departure($row), $departuresStmt->fetchAll());
 

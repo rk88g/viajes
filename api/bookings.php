@@ -23,7 +23,7 @@ try {
 
     $pdo = db();
     $departureStmt = $pdo->prepare(
-        'select
+        "select
             d.id,
             d.trip_id,
             d.departure_date,
@@ -32,16 +32,16 @@ try {
             d.promo_price,
             d.status,
             json_build_object(
-              ''id'', t.id,
-              ''title'', t.title,
-              ''price'', t.price,
-              ''meeting_point'', t.meeting_point
+              'id', t.id,
+              'title', t.title,
+              'price', t.price,
+              'meeting_point', t.meeting_point
             ) as trip
          from public.departures d
          inner join public.trips t on t.id = d.trip_id
          where d.id = :id
            and t.published = true
-         limit 1'
+         limit 1"
     );
     $departureStmt->execute([':id' => $departureId]);
     $departure = map_departure($departureStmt->fetch() ?: []);
