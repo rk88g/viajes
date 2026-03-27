@@ -1,9 +1,15 @@
 ﻿(function () {
   const config = window.VIAJES_CONFIG || {};
+  const apiBaseUrl = String(config.apiBaseUrl || '').replace(/\/+$/, '');
+
+  function apiUrl(path) {
+    return apiBaseUrl ? `${apiBaseUrl}${path}` : path;
+  }
+
   const API = {
-    bootstrap: './api/bootstrap.php',
-    contact: './api/contact.php',
-    bookings: './api/bookings.php'
+    bootstrap: apiUrl('/api/bootstrap.php'),
+    contact: apiUrl('/api/contact.php'),
+    bookings: apiUrl('/api/bookings.php')
   };
 
   const demoCatalog = [
@@ -270,7 +276,7 @@
 
   async function request(url, options = {}) {
     const response = await fetch(url, {
-      credentials: 'same-origin',
+      credentials: 'omit',
       headers: {
         'Content-Type': 'application/json',
         ...(options.headers || {})
@@ -553,3 +559,5 @@
 
   init();
 })();
+
+

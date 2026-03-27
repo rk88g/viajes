@@ -4,7 +4,10 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/_bootstrap.php';
 
 try {
-    require_method('POST');
+    $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+    if (!in_array($method, ['POST', 'OPTIONS'], true)) {
+        fail('Metodo no permitido', 405);
+    }
     init_session();
     $_SESSION = [];
     if (ini_get('session.use_cookies')) {

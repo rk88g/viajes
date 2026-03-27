@@ -1,4 +1,5 @@
 window.VIAJES_CONFIG = {
+  apiBaseUrl: "",
   company: {
     companyName: "Jalisco Rutas",
     cityLabel: "Guadalajara y Zona Metropolitana",

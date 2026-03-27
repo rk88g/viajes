@@ -1,12 +1,20 @@
-(function () {
+﻿(function () {
+  const config = window.VIAJES_CONFIG || {};
+  const apiBaseUrl = String(config.apiBaseUrl || '').replace(/\/+$/, '');
+  const tokenStorageKey = 'jr_admin_token';
+
+  function apiUrl(path) {
+    return apiBaseUrl ? `${apiBaseUrl}${path}` : path;
+  }
+
   const API = {
-    session: './api/admin/session.php',
-    login: './api/admin/login.php',
-    logout: './api/admin/logout.php',
-    bootstrap: './api/admin/bootstrap.php',
-    trips: './api/admin/trips.php',
-    departures: './api/admin/departures.php',
-    settings: './api/admin/settings.php'
+    session: apiUrl('/api/admin/session.php'),
+    login: apiUrl('/api/admin/login.php'),
+    logout: apiUrl('/api/admin/logout.php'),
+    bootstrap: apiUrl('/api/admin/bootstrap.php'),
+    trips: apiUrl('/api/admin/trips.php'),
+    departures: apiUrl('/api/admin/departures.php'),
+    settings: apiUrl('/api/admin/settings.php')
   };
 
   const elements = {
@@ -40,6 +48,26 @@
     messages: [],
     settings: null
   };
+
+  function getAdminToken() {
+    try {
+      return window.localStorage.getItem(tokenStorageKey);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function setAdminToken(token) {
+    try {
+      if (token) {
+        window.localStorage.setItem(tokenStorageKey, token);
+      } else {
+        window.localStorage.removeItem(tokenStorageKey);
+      }
+    } catch (error) {
+      // noop
+    }
+  }
 
   function currency(value) {
     return new Intl.NumberFormat('es-MX', {
@@ -78,10 +106,12 @@
   }
 
   async function request(url, options = {}) {
+    const adminToken = getAdminToken();
     const response = await fetch(url, {
-      credentials: 'same-origin',
+      credentials: 'omit',
       headers: {
         'Content-Type': 'application/json',
+        ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {}),
         ...(options.headers || {})
       },
       ...options
@@ -95,11 +125,11 @@
     } catch (error) {
       const compactText = rawText.replace(/\s+/g, ' ').trim().slice(0, 220);
       const fallbackMessage = compactText || `El servidor respondio con estado ${response.status}`;
-      throw new Error(`Respuesta invalida del servidor (${response.status}). ${fallbackMessage}`);
+      throw new Error(`${url}: respuesta invalida (${response.status}). ${fallbackMessage}`);
     }
 
     if (!response.ok || !data || data.ok === false) {
-      throw new Error(data?.error || `Error del servidor (${response.status})`);
+      throw new Error(data?.error ? `${url}: ${data.error}` : `${url}: error del servidor (${response.status})`);
     }
 
     return data;
@@ -129,7 +159,7 @@
 
   function renderTripOptions() {
     const options = state.trips
-      .map((trip) => `<option value="${trip.id}">${trip.title} � ${trip.destination}</option>`)
+      .map((trip) => `<option value="${trip.id}">${trip.title} · ${trip.destination}</option>`)
       .join('');
     elements.departureTripSelect.innerHTML = `<option value="">Selecciona un viaje</option>${options}`;
   }
@@ -318,6 +348,7 @@
       const data = await request(API.session, { method: 'GET' });
       if (!data.authenticated) {
         state.admin = null;
+        setAdminToken(null);
         elements.authSection.classList.remove('hidden');
         elements.adminApp.classList.add('hidden');
         elements.logoutButton.style.display = 'none';
@@ -348,13 +379,15 @@
     setAlert('Validando sesion...');
 
     try {
-      await request(API.login, {
+      const response = await request(API.login, {
         method: 'POST',
         body: JSON.stringify({ email, password })
       });
+      setAdminToken(response.token || null);
       elements.loginForm.reset();
       await bootSession();
     } catch (error) {
+      setAdminToken(null);
       setAlert(error.message, 'error');
     }
   }
@@ -487,12 +520,13 @@
   function bindEvents() {
     elements.loginForm.addEventListener('submit', submitLogin);
     elements.logoutButton.addEventListener('click', async () => {
+      setAdminToken(null);
       try {
         await request(API.logout, { method: 'POST', body: JSON.stringify({ logout: true }) });
-        await bootSession();
       } catch (error) {
-        setAlert(error.message, 'error');
+        // noop
       }
+      await bootSession();
     });
 
     elements.tripForm.addEventListener('submit', submitTrip);
