@@ -56,29 +56,73 @@ try {
     );
     $incomeEntries = array_map(static fn(array $row): array => map_income_entry($row), $incomeEntriesStmt->fetchAll());
 
+    $expenseEntriesStmt = $pdo->query(
+        'select id, concept, category, vendor_name, amount, currency, status, expense_date, due_date, payment_method, reference_code, notes
+         from public.expense_entries
+         order by expense_date desc, created_at desc
+         limit 50'
+    );
+    $expenseEntries = array_map(static fn(array $row): array => map_expense_entry($row), $expenseEntriesStmt->fetchAll());
+
     $incomeSummaryStmt = $pdo->query(
-        "select
-            to_char(date_trunc('month', payment_date), 'YYYY-MM') as month_key,
-            date_trunc('month', payment_date)::date as month_start,
-            coalesce(sum(case when status = 'received' then amount else 0 end), 0) as received_total,
-            coalesce(sum(case when status = 'pending' then amount else 0 end), 0) as pending_total,
-            coalesce(sum(case when status = 'refunded' then amount else 0 end), 0) as refunded_total,
-            count(*) as entries_count
-         from public.income_entries
-         group by 1, 2
-         order by month_start desc
-         limit 12"
+        "with income_months as (
+            select
+              date_trunc('month', payment_date)::date as month_start,
+              coalesce(sum(case when status = 'received' then amount else 0 end), 0) as received_total,
+              coalesce(sum(case when status = 'pending' then amount else 0 end), 0) as pending_total,
+              coalesce(sum(case when status = 'refunded' then amount else 0 end), 0) as refunded_total,
+              count(*) as income_entries_count
+            from public.income_entries
+            group by 1
+          ),
+          expense_months as (
+            select
+              date_trunc('month', expense_date)::date as month_start,
+              coalesce(sum(case when status = 'paid' then amount else 0 end), 0) as expense_total,
+              count(*) as expense_entries_count
+            from public.expense_entries
+            group by 1
+          ),
+          months as (
+            select month_start from income_months
+            union
+            select month_start from expense_months
+          )
+          select
+            to_char(months.month_start, 'YYYY-MM') as month_key,
+            months.month_start,
+            coalesce(income_months.received_total, 0) as received_total,
+            coalesce(income_months.pending_total, 0) as pending_total,
+            coalesce(income_months.refunded_total, 0) as refunded_total,
+            coalesce(expense_months.expense_total, 0) as expense_total,
+            coalesce(income_months.received_total, 0) - coalesce(expense_months.expense_total, 0) as net_total,
+            coalesce(income_months.income_entries_count, 0) + coalesce(expense_months.expense_entries_count, 0) as entries_count
+          from months
+          left join income_months on income_months.month_start = months.month_start
+          left join expense_months on expense_months.month_start = months.month_start
+          order by months.month_start desc
+          limit 12"
     );
     $incomeSummary = array_map(
         static function (array $row): array {
             $row['received_total'] = (float) ($row['received_total'] ?? 0);
             $row['pending_total'] = (float) ($row['pending_total'] ?? 0);
             $row['refunded_total'] = (float) ($row['refunded_total'] ?? 0);
+            $row['expense_total'] = (float) ($row['expense_total'] ?? 0);
+            $row['net_total'] = (float) ($row['net_total'] ?? 0);
             $row['entries_count'] = (int) ($row['entries_count'] ?? 0);
             return $row;
         },
         $incomeSummaryStmt->fetchAll()
     );
+
+    $visitsStmt = $pdo->query(
+        'select id, visitor_token, visit_count, user_agent, ip_address, first_seen_at, last_seen_at
+         from public.site_visitors
+         order by last_seen_at desc
+         limit 80'
+    );
+    $siteVisits = array_map(static fn(array $row): array => map_site_visit($row), $visitsStmt->fetchAll());
 
     success([
         'settings' => $settings,
@@ -87,7 +131,9 @@ try {
         'bookings' => $bookings,
         'messages' => $messages,
         'income_entries' => $incomeEntries,
+        'expense_entries' => $expenseEntries,
         'income_summary' => $incomeSummary,
+        'site_visits' => $siteVisits,
     ]);
 } catch (Throwable $exception) {
     fail($exception->getMessage(), 500);
