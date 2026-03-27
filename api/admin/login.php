@@ -24,7 +24,10 @@ try {
         'logged_in_at' => gmdate('c'),
     ];
 
-    success(['admin' => $_SESSION['admin']]);
+    success([
+        'admin' => $_SESSION['admin'],
+        'token' => create_admin_token($email),
+    ]);
 } catch (Throwable $exception) {
     fail($exception->getMessage(), 500);
 }

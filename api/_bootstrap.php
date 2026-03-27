@@ -9,6 +9,8 @@ header('X-Frame-Options: SAMEORIGIN');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 
+handle_cors();
+
 load_env_file(dirname(__DIR__) . '/.env');
 load_env_file(dirname(__DIR__) . '/.env.local');
 
@@ -57,6 +59,26 @@ function env_value(string $key, ?string $default = null): ?string
     }
 
     return $value;
+}
+
+function handle_cors(): void
+{
+    $origin = trim((string) ($_SERVER['HTTP_ORIGIN'] ?? ''));
+    if ($origin !== '') {
+        header('Access-Control-Allow-Origin: ' . $origin);
+        header('Vary: Origin');
+    } else {
+        header('Access-Control-Allow-Origin: *');
+    }
+
+    header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization');
+    header('Access-Control-Max-Age: 86400');
+
+    if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'OPTIONS') {
+        http_response_code(204);
+        exit;
+    }
 }
 
 function load_env_file(string $path): void
@@ -220,6 +242,11 @@ function init_session(): void
 
 function current_admin(): ?array
 {
+    $tokenAdmin = current_admin_from_token();
+    if ($tokenAdmin !== null) {
+        return $tokenAdmin;
+    }
+
     init_session();
     return isset($_SESSION['admin']) && is_array($_SESSION['admin']) ? $_SESSION['admin'] : null;
 }
@@ -264,6 +291,100 @@ function authenticate_admin(string $email, string $password): bool
     }
 
     return hash_equals((string) $credentials['plainPassword'], $password);
+}
+
+function base64url_encode(string $value): string
+{
+    return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
+}
+
+function base64url_decode(string $value): string
+{
+    $padding = strlen($value) % 4;
+    if ($padding > 0) {
+        $value .= str_repeat('=', 4 - $padding);
+    }
+
+    $decoded = base64_decode(strtr($value, '-_', '+/'), true);
+    if ($decoded === false) {
+        throw new RuntimeException('Token invalido');
+    }
+
+    return $decoded;
+}
+
+function admin_token_secret(): string
+{
+    $credentials = admin_credentials();
+    $secretSource = !empty($credentials['passwordHash'])
+        ? (string) $credentials['passwordHash']
+        : 'plain:' . (string) ($credentials['plainPassword'] ?? '');
+
+    return hash('sha256', strtolower(trim((string) $credentials['email'])) . '|' . $secretSource);
+}
+
+function read_bearer_token(): ?string
+{
+    $header = (string) ($_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
+    if ($header === '' || stripos($header, 'Bearer ') !== 0) {
+        return null;
+    }
+
+    $token = trim(substr($header, 7));
+    return $token !== '' ? $token : null;
+}
+
+function create_admin_token(string $email): string
+{
+    $header = base64url_encode(json_encode(['alg' => 'HS256', 'typ' => 'JWT'], JSON_UNESCAPED_SLASHES));
+    $payload = base64url_encode(json_encode([
+        'email' => strtolower(trim($email)),
+        'iat' => time(),
+        'exp' => time() + (60 * 60 * 8),
+    ], JSON_UNESCAPED_SLASHES));
+
+    $signature = base64url_encode(hash_hmac('sha256', $header . '.' . $payload, admin_token_secret(), true));
+    return $header . '.' . $payload . '.' . $signature;
+}
+
+function current_admin_from_token(): ?array
+{
+    $token = read_bearer_token();
+    if ($token === null) {
+        return null;
+    }
+
+    $parts = explode('.', $token);
+    if (count($parts) !== 3) {
+        return null;
+    }
+
+    [$header, $payload, $signature] = $parts;
+    $expectedSignature = base64url_encode(hash_hmac('sha256', $header . '.' . $payload, admin_token_secret(), true));
+
+    if (!hash_equals($expectedSignature, $signature)) {
+        return null;
+    }
+
+    $decodedPayload = json_decode(base64url_decode($payload), true);
+    if (!is_array($decodedPayload)) {
+        return null;
+    }
+
+    $email = strtolower(trim((string) ($decodedPayload['email'] ?? '')));
+    $expiresAt = (int) ($decodedPayload['exp'] ?? 0);
+    $credentials = admin_credentials();
+    $expectedEmail = strtolower(trim((string) $credentials['email']));
+
+    if ($email === '' || $email !== $expectedEmail || $expiresAt < time()) {
+        return null;
+    }
+
+    return [
+        'email' => $email,
+        'logged_in_at' => isset($decodedPayload['iat']) ? gmdate('c', (int) $decodedPayload['iat']) : gmdate('c'),
+        'auth_mode' => 'token',
+    ];
 }
 
 function normalize_jsonb($value): array

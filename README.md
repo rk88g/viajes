@@ -30,6 +30,16 @@ Usa `.env.example` como referencia. Solo necesitas:
 - `ADMIN_EMAIL`
 - `ADMIN_PASSWORD` o `ADMIN_PASSWORD_HASH`
 
+## Vercel + Railway
+
+El proyecto ya incluye [vercel.json](/C:/Users/rk88g/Documents/GitHub/viajes/vercel.json) para que Vercel reescriba `/api/*` hacia tu backend de Railway.
+
+Eso te da dos ventajas:
+- el frontend sigue usando rutas relativas `/api/...`
+- no dependes de cookies entre dominios para el admin
+
+La propiedad `apiBaseUrl` de [assets/js/config.js](/C:/Users/rk88g/Documents/GitHub/viajes/assets/js/config.js) puede quedarse vacia mientras uses ese proxy en Vercel.
+
 ## Despliegue en Railway
 
 1. Crea el servicio con este repositorio y el `Dockerfile` incluido.

@@ -25,3 +25,7 @@ La conexion PostgreSQL y la contrasena de base de datos no deben ponerse en el f
 ## Reservas
 
 Por ahora el sitio trabaja sin pagos en linea. Las reservas se registran en base de datos y el usuario continua por WhatsApp para cerrar la venta.
+
+## Frontend en Vercel
+
+Si publicas el frontend en Vercel, usa el proxy definido en [vercel.json](/C:/Users/rk88g/Documents/GitHub/viajes/vercel.json) para que `/api/*` se enrute a Railway. Asi mantienes el frontend aislado y el backend fuera del navegador como origen directo.
