@@ -1,4 +1,4 @@
-﻿FROM php:8.2-apache
+FROM php:8.2-apache
 
 RUN set -eux; \
     apt-get update; \
@@ -12,7 +12,10 @@ RUN set -eux; \
 
 WORKDIR /var/www/html
 COPY . /var/www/html/
+COPY docker/apache-entrypoint.sh /usr/local/bin/apache-entrypoint.sh
 
-RUN chown -R www-data:www-data /var/www/html
+RUN chmod +x /usr/local/bin/apache-entrypoint.sh && \
+    chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
+CMD ["/usr/local/bin/apache-entrypoint.sh"]
