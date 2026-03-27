@@ -7,6 +7,7 @@ try {
     require_method('GET');
 
     $pdo = db();
+    $visitCounter = register_site_visit($pdo, read_visitor_token());
 
     $settingsStmt = $pdo->query('select * from public.site_settings where id = 1 limit 1');
     $settings = $settingsStmt->fetch() ?: null;
@@ -53,6 +54,7 @@ try {
     success([
         'settings' => $settings,
         'catalog' => $catalog,
+        'visit_counter' => $visitCounter,
     ]);
 } catch (Throwable $exception) {
     fail($exception->getMessage(), 500);

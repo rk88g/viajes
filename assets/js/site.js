@@ -1,6 +1,7 @@
 ﻿(function () {
   const config = window.VIAJES_CONFIG || {};
   const apiBaseUrl = String(config.apiBaseUrl || '').replace(/\/+$/, '');
+  const visitorStorageKey = 'jr_public_visitor_token';
 
   function apiUrl(path) {
     return apiBaseUrl ? `${apiBaseUrl}${path}` : path;
@@ -128,8 +129,9 @@
         empty_text: 'Estamos preparando la portada comercial.'
       },
       runtime: {
-        connected_message: 'Sitio conectado al backend. Catalogo y textos cargados desde la base de datos.',
-        fallback_message: 'No se pudo conectar al backend. Se cargo el modo demo para que el sitio siga visible.'
+        visitor_intro: 'Eres el cliente numero {count} en entrar a nuestra red.',
+        visitor_outro: 'Esperamos llevarte a un lugar interesante y ayudarte a encontrar el viaje ideal para tu proxima aventura.',
+        fallback_message: 'Explora nuestras rutas y dejate sorprender. Estamos listos para ayudarte a encontrar una experiencia inolvidable.'
       },
       trust_strip: {
         items: [
@@ -297,7 +299,8 @@
   const state = {
     catalog: [],
     selectedDeparture: null,
-    settings: null
+    settings: null,
+    visitCounter: null
   };
 
   function isPlainObject(value) {
@@ -409,6 +412,33 @@
     return encodeURIComponent(String(message || '').trim());
   }
 
+  function getVisitorToken() {
+    try {
+      const existingToken = window.localStorage.getItem(visitorStorageKey);
+      if (existingToken) {
+        return existingToken;
+      }
+
+      const generatedToken = window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2, 12)}`;
+      window.localStorage.setItem(visitorStorageKey, generatedToken);
+      return generatedToken;
+    } catch (error) {
+      return window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2, 12)}`;
+    }
+  }
+
+  function saveVisitorToken(token) {
+    if (!token) {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(visitorStorageKey, token);
+    } catch (error) {
+      // noop
+    }
+  }
+
   function normalizeArray(value) {
     if (Array.isArray(value)) {
       return value.filter(Boolean);
@@ -467,6 +497,23 @@
 
   function homepageContent() {
     return state.settings?.homepage_content || defaultHomepageContent();
+  }
+
+  function buildRuntimeStatusMessage(isFallback = false) {
+    const runtime = homepageContent().runtime || {};
+
+    if (isFallback) {
+      return runtime.fallback_message || 'Explora nuestras rutas y encuentra tu proxima aventura.';
+    }
+
+    const visitorNumber = state.visitCounter?.visitor_number || state.visitCounter?.visit_count || 1;
+    const introTemplate = runtime.visitor_intro || 'Eres el cliente numero {count} en entrar a nuestra red.';
+    const intro = introTemplate.replace('{count}', String(visitorNumber));
+    const outro =
+      runtime.visitor_outro ||
+      'Esperamos llevarte a un lugar interesante y ayudarte a encontrar el viaje ideal para tu proxima aventura.';
+
+    return `${intro} ${outro}`.trim();
   }
 
   function whatsappUrl(baseMessage) {
@@ -900,18 +947,26 @@
 
   async function loadBootstrap() {
     try {
-      const data = await request(API.bootstrap, { method: 'GET' });
+      const data = await request(API.bootstrap, {
+        method: 'GET',
+        headers: {
+          'X-Visitor-Token': getVisitorToken()
+        }
+      });
       state.settings = mergedSettings(data.settings);
       state.catalog = data.catalog || [];
+      state.visitCounter = data.visit_counter || null;
+      saveVisitorToken(data.visit_counter?.token || '');
       applySettings();
       renderCatalog();
-      setStatus(homepageContent().runtime?.connected_message || 'Sitio conectado al backend.');
+      setStatus(buildRuntimeStatusMessage());
     } catch (error) {
       state.settings = mergedSettings();
       state.catalog = demoCatalog;
+      state.visitCounter = null;
       applySettings();
       renderCatalog();
-      setStatus(homepageContent().runtime?.fallback_message || 'No se pudo conectar al backend.', 'error');
+      setStatus(buildRuntimeStatusMessage(true), 'error');
     }
   }
 

@@ -446,6 +446,79 @@ function map_income_entry(array $row): array
     return $row;
 }
 
+function read_visitor_token(): ?string
+{
+    $token = trim((string) ($_SERVER['HTTP_X_VISITOR_TOKEN'] ?? $_GET['visitor_token'] ?? ''));
+    if ($token === '') {
+        return null;
+    }
+
+    if (!preg_match('/^[a-zA-Z0-9-]{16,120}$/', $token)) {
+        return null;
+    }
+
+    return $token;
+}
+
+function register_site_visit(PDO $pdo, ?string $visitorToken): array
+{
+    $token = $visitorToken;
+    if ($token === null || $token === '') {
+        $token = bin2hex(random_bytes(16));
+    }
+
+    $existingStmt = $pdo->prepare(
+        'select id, visit_count
+         from public.site_visitors
+         where visitor_token = :visitor_token
+         limit 1'
+    );
+    $existingStmt->execute([':visitor_token' => $token]);
+    $existing = $existingStmt->fetch();
+
+    if ($existing) {
+        $updateStmt = $pdo->prepare(
+            "update public.site_visitors
+             set visit_count = visit_count + 1,
+                 last_seen_at = timezone('utc', now()),
+                 user_agent = :user_agent,
+                 ip_address = :ip_address
+             where id = :id"
+        );
+        $updateStmt->execute([
+            ':user_agent' => trim((string) ($_SERVER['HTTP_USER_AGENT'] ?? '')) ?: null,
+            ':ip_address' => trim((string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '')) ?: null,
+            ':id' => (int) $existing['id'],
+        ]);
+
+        return [
+            'token' => $token,
+            'visitor_number' => (int) $existing['id'],
+            'visit_count' => ((int) ($existing['visit_count'] ?? 0)) + 1,
+            'is_new_visitor' => false,
+        ];
+    }
+
+    $insertStmt = $pdo->prepare(
+        'insert into public.site_visitors (visitor_token, visit_count, user_agent, ip_address)
+         values (:visitor_token, 1, :user_agent, :ip_address)
+         returning id, visit_count'
+    );
+    $insertStmt->execute([
+        ':visitor_token' => $token,
+        ':user_agent' => trim((string) ($_SERVER['HTTP_USER_AGENT'] ?? '')) ?: null,
+        ':ip_address' => trim((string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '')) ?: null,
+    ]);
+    $created = $insertStmt->fetch() ?: ['id' => 0, 'visit_count' => 1];
+
+    return [
+        'token' => $token,
+        'visitor_number' => (int) ($created['id'] ?? 0),
+        'visit_count' => (int) ($created['visit_count'] ?? 1),
+        'is_new_visitor' => true,
+    ];
+}
+
 function sync_booking_income_entry(PDO $pdo, string $bookingId, string $incomeStatus): void
 {
     $bookingStmt = $pdo->prepare(
