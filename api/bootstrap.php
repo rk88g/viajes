@@ -12,7 +12,7 @@ try {
     $settings = $settingsStmt->fetch() ?: null;
 
     $catalogStmt = $pdo->prepare(
-        'select
+        "select
             d.id as departure_id,
             d.departure_date,
             d.return_date,
@@ -21,27 +21,27 @@ try {
             d.status,
             d.promo_price,
             json_build_object(
-              ''id'', t.id,
-              ''slug'', t.slug,
-              ''title'', t.title,
-              ''destination'', t.destination,
-              ''meeting_point'', t.meeting_point,
-              ''duration_text'', t.duration_text,
-              ''price'', t.price,
-              ''featured'', t.featured,
-              ''hero_image_url'', t.hero_image_url,
-              ''short_description'', t.short_description,
-              ''description'', t.description,
-              ''includes'', t.includes,
-              ''itinerary'', t.itinerary,
-              ''tags'', t.tags
+              'id', t.id,
+              'slug', t.slug,
+              'title', t.title,
+              'destination', t.destination,
+              'meeting_point', t.meeting_point,
+              'duration_text', t.duration_text,
+              'price', t.price,
+              'featured', t.featured,
+              'hero_image_url', t.hero_image_url,
+              'short_description', t.short_description,
+              'description', t.description,
+              'includes', t.includes,
+              'itinerary', t.itinerary,
+              'tags', t.tags
             ) as trip
          from public.departures d
          inner join public.trips t on t.id = d.trip_id
-         where d.status = ''open''
+         where d.status = 'open'
            and t.published = true
            and d.departure_date >= current_date
-         order by d.departure_date asc'
+         order by d.departure_date asc"
     );
     $catalogStmt->execute();
 

@@ -681,13 +681,13 @@ function confirm_booking_payment(PDO $pdo, string $bookingId, ?string $paymentIn
     ]);
 
     $bookingUpdateStmt = $pdo->prepare(
-        'update public.bookings
+        "update public.bookings
          set status = :status,
              payment_status = :payment_status,
              stripe_payment_intent = coalesce(:payment_intent, stripe_payment_intent),
-             paid_at = timezone(''utc'', now()),
-             checkout_payload = coalesce(checkout_payload, ''{}''::jsonb) || cast(:session_payload as jsonb)
-         where id = :id'
+             paid_at = timezone('utc', now()),
+             checkout_payload = coalesce(checkout_payload, '{}'::jsonb) || cast(:session_payload as jsonb)
+         where id = :id"
     );
     $bookingUpdateStmt->execute([
         ':status' => 'confirmed',
