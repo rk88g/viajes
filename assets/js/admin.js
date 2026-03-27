@@ -140,6 +140,23 @@
     elements.adminAlert.style.color = type === 'error' ? '#af3a12' : '#1f7a5a';
   }
 
+  function showAuthScreen(message, type) {
+    state.admin = null;
+    elements.authSection.classList.remove('hidden');
+    elements.adminApp.classList.add('hidden');
+    elements.logoutButton.style.display = 'none';
+    elements.adminUserLabel.textContent = 'Sin sesion';
+    setAlert(message || 'Inicia sesion con tu acceso privado para editar el sitio.', type);
+  }
+
+  function showAdminScreen(admin) {
+    state.admin = admin || null;
+    elements.authSection.classList.add('hidden');
+    elements.adminApp.classList.remove('hidden');
+    elements.logoutButton.style.display = 'inline-flex';
+    elements.adminUserLabel.textContent = admin?.email || 'Admin';
+  }
+
   function actionBadge(value) {
     if (value === 'paid' || value === 'confirmed' || value === 'published') {
       return `<span class="pill pill-success">${value}</span>`;
@@ -344,30 +361,43 @@
   }
 
   async function bootSession() {
+    const storedToken = getAdminToken();
+
+    if (storedToken) {
+      try {
+        const data = await request(API.bootstrap, { method: 'GET' });
+        state.settings = data.settings;
+        state.trips = data.trips || [];
+        state.departures = data.departures || [];
+        state.bookings = data.bookings || [];
+        state.messages = data.messages || [];
+        renderMetrics();
+        renderTripOptions();
+        renderTripsTable();
+        renderDeparturesTable();
+        renderBookingsTable();
+        renderMessagesTable();
+        fillSettingsForm();
+        showAdminScreen({ email: 'Administrador' });
+        setAlert('Sesion iniciada. Ya puedes administrar paquetes, salidas y mensajes.');
+        return;
+      } catch (error) {
+        setAdminToken(null);
+      }
+    }
+
     try {
       const data = await request(API.session, { method: 'GET' });
       if (!data.authenticated) {
-        state.admin = null;
         setAdminToken(null);
-        elements.authSection.classList.remove('hidden');
-        elements.adminApp.classList.add('hidden');
-        elements.logoutButton.style.display = 'none';
-        elements.adminUserLabel.textContent = 'Sin sesion';
-        setAlert('Inicia sesion con tu acceso privado para editar el sitio.');
+        showAuthScreen('Inicia sesion con tu acceso privado para editar el sitio.');
         return;
       }
 
-      state.admin = data.admin;
-      elements.authSection.classList.add('hidden');
-      elements.adminApp.classList.remove('hidden');
-      elements.logoutButton.style.display = 'inline-flex';
-      elements.adminUserLabel.textContent = data.admin?.email || 'Admin';
+      showAdminScreen(data.admin);
       await refreshAndRender('Sesion iniciada. Ya puedes administrar paquetes, salidas y mensajes.');
     } catch (error) {
-      elements.authSection.classList.remove('hidden');
-      elements.adminApp.classList.add('hidden');
-      elements.logoutButton.style.display = 'none';
-      setAlert(error.message, 'error');
+      showAuthScreen(error.message, 'error');
     }
   }
 
@@ -385,10 +415,11 @@
       });
       setAdminToken(response.token || null);
       elements.loginForm.reset();
-      await bootSession();
+      showAdminScreen(response.admin || { email });
+      await refreshAndRender('Sesion iniciada. Ya puedes administrar paquetes, salidas y mensajes.');
     } catch (error) {
       setAdminToken(null);
-      setAlert(error.message, 'error');
+      showAuthScreen(error.message, 'error');
     }
   }
 
