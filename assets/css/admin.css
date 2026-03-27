@@ -1,5 +1,177 @@
 .admin-app {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
   padding-bottom: 36px;
+}
+
+.admin-sidebar {
+  position: sticky;
+  top: 24px;
+  padding: 20px 18px;
+  border-radius: 28px;
+  border: 1px solid rgba(18, 49, 74, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 22px 60px rgba(18, 49, 74, 0.08);
+}
+
+.admin-sidebar-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.admin-sidebar-copy {
+  min-width: 0;
+}
+
+.admin-sidebar-copy strong,
+.admin-sidebar-copy small {
+  display: block;
+}
+
+.admin-sidebar-copy small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.admin-sidebar-toggle {
+  width: 46px;
+  height: 46px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(216, 77, 31, 0.16), rgba(255, 255, 255, 0.9));
+  cursor: pointer;
+}
+
+.admin-sidebar-toggle span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  margin: 4px auto;
+  border-radius: 999px;
+  background: var(--accent-dark);
+}
+
+.admin-section-nav {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-section-nav button {
+  position: relative;
+  width: 100%;
+  padding: 14px 16px 14px 18px;
+  border: 1px solid rgba(18, 49, 74, 0.08);
+  border-radius: 18px 22px 22px 18px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(243, 236, 229, 0.75));
+  color: var(--navy);
+  text-align: left;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+
+.admin-section-nav button::before {
+  content: "";
+  position: absolute;
+  inset: 8px auto 8px 8px;
+  width: 4px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.admin-section-nav button:hover,
+.admin-section-nav button.is-active {
+  transform: translateX(4px);
+  border-color: rgba(216, 77, 31, 0.24);
+  box-shadow: 0 14px 28px rgba(216, 77, 31, 0.12);
+}
+
+.admin-section-nav button.is-active {
+  background: linear-gradient(135deg, rgba(216, 77, 31, 0.14), rgba(255, 255, 255, 0.96));
+}
+
+.admin-section-nav button.is-active::before {
+  background: var(--accent);
+}
+
+.admin-app.is-collapsed {
+  grid-template-columns: 92px minmax(0, 1fr);
+}
+
+.admin-app.is-collapsed .admin-sidebar {
+  padding-inline: 12px;
+}
+
+.admin-app.is-collapsed .admin-sidebar-copy {
+  display: none;
+}
+
+.admin-app.is-collapsed .admin-section-nav button {
+  min-height: 58px;
+  padding: 14px 10px;
+  text-align: center;
+  border-radius: 18px;
+  font-size: 0.8rem;
+  line-height: 1.25;
+}
+
+.admin-app.is-collapsed .admin-section-nav button::before {
+  inset: auto 12px 8px 12px;
+  width: auto;
+  height: 4px;
+}
+
+.admin-content {
+  min-width: 0;
+}
+
+.admin-sections {
+  position: relative;
+}
+
+.admin-section {
+  display: none;
+  animation: admin-section-in 0.22s ease;
+}
+
+.admin-section.is-active {
+  display: block;
+}
+
+.admin-panel-full {
+  min-height: calc(100vh - 220px);
+}
+
+.admin-panel-full .stack-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-panel-full .stack-form > .checkbox-row,
+.admin-panel-full .stack-form > .admin-help,
+.admin-panel-full .stack-form > .button {
+  grid-column: 1 / -1;
+}
+
+.admin-panel-full .stack-form > label:has(textarea) {
+  grid-column: 1 / -1;
+}
+
+@keyframes admin-section-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 #logoutButton {
@@ -59,4 +231,48 @@
 .income-source {
   display: inline-flex;
   margin-top: 6px;
+}
+
+.admin-sync-updating {
+  color: var(--accent-dark);
+}
+
+.admin-sync-ok {
+  color: var(--green);
+}
+
+@media (max-width: 1180px) {
+  .admin-app {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    position: static;
+  }
+
+  .admin-section-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-app.is-collapsed {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-app.is-collapsed .admin-sidebar-copy {
+    display: block;
+  }
+}
+
+@media (max-width: 720px) {
+  .admin-section-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-panel-full {
+    min-height: auto;
+  }
+
+  .admin-panel-full .stack-form {
+    grid-template-columns: 1fr;
+  }
 }
