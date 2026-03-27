@@ -23,7 +23,7 @@ create table if not exists public.site_settings (
   id integer primary key default 1 check (id = 1),
   company_name text not null default 'Jalisco Rutas',
   hero_badge text not null default 'Salidas semanales desde Guadalajara y ZMG',
-  hero_title text not null default 'Viajes y rutas turisticas con cupo real, apartado rapido y pago en linea',
+  hero_title text not null default 'Viajes y rutas turisticas con cupo real y apartado rapido',
   hero_subtitle text not null default 'Convierte visitas en reservas con una pagina informativa, catalogo vivo y atencion inmediata por WhatsApp.',
   support_email text not null default 'hola@jalisconrutas.com',
   support_phone text not null default '+52 33 1246 9036',
@@ -31,6 +31,7 @@ create table if not exists public.site_settings (
   whatsapp_message text not null default 'Hola, quiero informacion sobre los proximos viajes y rutas turisticas.',
   chatbot_enabled boolean not null default false,
   chatbot_embed_code text not null default '',
+  homepage_content jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
@@ -328,7 +329,7 @@ values (
   1,
   'Jalisco Rutas',
   'Salidas semanales desde Guadalajara y ZMG',
-  'Viajes y rutas turisticas con cupo real, apartado rapido y pago en linea',
+  'Viajes y rutas turisticas con cupo real y apartado rapido',
   'Convierte visitas en reservas con una pagina informativa, catalogo vivo y atencion inmediata por WhatsApp.',
   'hola@jalisconrutas.com',
   '+52 33 1246 9036',

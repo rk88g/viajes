@@ -49,6 +49,221 @@
     settings: null
   };
 
+  function defaultHomepageContent() {
+    return {
+      meta: {
+        title: 'Jalisco Rutas | Viajes y rutas turisticas desde Guadalajara',
+        description: 'Vende viajes y rutas turisticas desde Guadalajara con catalogo vivo, reservas por WhatsApp y panel administrable.'
+      },
+      navigation: {
+        brand_subtitle: 'Experiencias turisticas en Jalisco',
+        links: [
+          { label: 'Tours', href: '#salidas' },
+          { label: 'Colecciones', href: '#colecciones' },
+          { label: 'Por que elegirnos', href: '#porque' },
+          { label: 'FAQ', href: '#faq' },
+          { label: 'Contacto', href: '#contacto' }
+        ],
+        cta_label: 'Cotizar ahora',
+        cta_href: '#contacto'
+      },
+      hero: {
+        eyebrow: 'Tours en Jalisco',
+        primary_cta_label: 'Ver tours disponibles',
+        primary_cta_href: '#salidas',
+        secondary_cta_label: 'Hablar por WhatsApp',
+        facts: [
+          { title: 'Salidas nuevas', text: 'Cada mes puedes cambiar rutas, fechas y precios sin tocar codigo.' },
+          { title: 'Ventas directas', text: 'Formulario, chatbot y WhatsApp listos para convertir interes en reserva.' },
+          { title: 'Enfoque local', text: 'Contenido orientado a clientes de Guadalajara, Zapopan y toda la ZMG.' }
+        ]
+      },
+      featured: {
+        label: 'Experiencias destacadas',
+        title: 'Rutas listas para vender',
+        link_label: 'Ver todas',
+        link_href: '#salidas',
+        empty_title: 'Cargando tours',
+        empty_text: 'Estamos preparando la portada comercial.'
+      },
+      runtime: {
+        connected_message: 'Sitio conectado al backend. Catalogo y textos cargados desde la base de datos.',
+        fallback_message: 'No se pudo conectar al backend. Se cargo el modo demo para que el sitio siga visible.'
+      },
+      trust_strip: {
+        items: [
+          { value: '50+', text: 'Salidas potenciales al ano entre rutas, experiencias y escapadas.' },
+          { value: 'Cupo visible', text: 'Urgencia comercial real para que la gente reserve antes de que se llene.' },
+          { value: 'Soporte rapido', text: 'WhatsApp, formulario y espacio para chatbot comercial embebido.' },
+          { value: 'Panel editable', text: 'Publica, pausa y cambia salidas desde tu dashboard administrativo.' }
+        ]
+      },
+      collections: {
+        label: 'Colecciones comerciales',
+        title: 'Organiza tu oferta como una agencia que siempre tiene algo nuevo',
+        description: 'La referencia que compartiste trabaja muy bien el efecto de abundancia. Aqui dejamos una estructura pensada para vender rutas clasicas, premium y escapadas de fin de semana.',
+        items: [
+          { number: '01', title: 'Clasicos de Jalisco', text: 'Tequila, Chapala, Ajijic, centro historico y pueblos magicos con alta demanda continua.' },
+          { number: '02', title: 'Experiencias premium', text: 'Tren, catas, helicoptero, globo, gastronomia o recorridos privados de mayor ticket.' },
+          { number: '03', title: 'Salidas mensuales', text: 'Rutas nuevas, temporadas especiales y viajes de oportunidad para redes y campanas semanales.' }
+        ]
+      },
+      catalog: {
+        label: 'Catalogo activo',
+        title: 'Proximas salidas y rutas disponibles',
+        description: 'Cada salida muestra fecha, punto de encuentro, precio estimado y disponibilidad. Todo sale de Supabase cuando conectes tus datos.',
+        empty_title: 'Cargando experiencias',
+        empty_text: 'Estamos preparando las proximas rutas disponibles para tu audiencia.',
+        loading_summary: 'cargando catalogo'
+      },
+      proof: {
+        label: 'Confianza',
+        title: 'Un layout pensado para convertir como un sitio de tours consolidado',
+        score_label: 'Recomendaciones',
+        score_value: '4.9 / 5',
+        score_text: 'Presenta reputacion, opiniones y claridad visual para reducir friccion en la compra.',
+        testimonials: [
+          {
+            quote: 'La estructura da sensacion de agencia real: muchos tours, contacto directo, confianza y llamados claros para reservar.',
+            author: 'Enfoque ideal para vender desde redes'
+          },
+          {
+            quote: 'En movil el usuario puede ver tours, precio, cupo y CTA sin perderse. Esa parte la vamos a cuidar al maximo.',
+            author: 'Diseno responsivo primero'
+          }
+        ]
+      },
+      workflow: {
+        label: 'Como apartan tus clientes',
+        title: 'Un flujo directo para vender por semana',
+        items: [
+          { number: '1', title: 'Publicas el tour', text: 'Creas el viaje, eliges fecha, cupo, punto de salida, precio y texto comercial desde el dashboard.' },
+          { number: '2', title: 'El cliente aparta', text: 'Ve la salida, deja sus datos y pasa a WhatsApp para cerrar la reserva contigo.' },
+          { number: '3', title: 'Tu confirmas y llenas cupo', text: 'Revisas reservas y mensajes desde el panel para dar seguimiento rapido.' }
+        ]
+      },
+      faq: {
+        label: 'Preguntas frecuentes',
+        title: 'La informacion clave antes de reservar',
+        items: [
+          { question: 'Desde donde salen los viajes?', answer: 'El sitio esta pensado para operar salidas desde Guadalajara y toda la Zona Metropolitana.', open: true },
+          { question: 'Puedo actualizar tours cada mes sin tocar codigo?', answer: 'Si. El dashboard administra viajes, salidas, cupos, textos del sitio y datos de contacto.', open: false },
+          { question: 'Como se aparta un viaje?', answer: 'El cliente deja sus datos, la reserva queda registrada y se le dirige a WhatsApp para confirmar el cierre contigo.', open: false },
+          { question: 'El sitio ya esta pensado para celular?', answer: 'Si. Esta version prioriza lectura, botones y tarjetas para que funcione muy bien en movil.', open: false }
+        ]
+      },
+      contact: {
+        label: 'Contacto directo',
+        title: 'Recibe solicitudes incluso cuando no estas conectado',
+        description: 'Este formulario guarda mensajes en la base para seguimiento comercial. Tambien dejas salida rapida a WhatsApp para cerrar reservas de forma inmediata.',
+        points: [
+          { type: 'link', label: 'Ver tours disponibles', href: '#salidas' },
+          { type: 'phone', label: '' },
+          { type: 'whatsapp', label: 'Atencion por WhatsApp' }
+        ],
+        form_title: 'Solicita informacion o cotizacion',
+        name_label: 'Nombre',
+        name_placeholder: 'Tu nombre completo',
+        email_label: 'Correo',
+        email_placeholder: 'tu@correo.com',
+        phone_label: 'Telefono',
+        phone_placeholder: '33 1234 5678',
+        message_label: 'Mensaje',
+        message_placeholder: 'Que ruta te interesa, cuantas personas viajan y para que fecha?',
+        submit_label: 'Enviar mensaje'
+      },
+      footer: {
+        description: 'Sitio preparado para vender viajes, rutas y experiencias turisticas desde Guadalajara.',
+        links: [
+          { label: 'Tours', href: '#salidas' },
+          { label: 'Contacto', href: '#contacto' }
+        ]
+      }
+    };
+  }
+
+  function isPlainObject(value) {
+    return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+  }
+
+  function cloneValue(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function normalizeObject(value) {
+    if (isPlainObject(value)) {
+      return value;
+    }
+
+    if (!value) {
+      return {};
+    }
+
+    try {
+      const parsed = JSON.parse(value);
+      return isPlainObject(parsed) ? parsed : {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function parseJsonObjectStrict(value) {
+    const rawValue = String(value || '').trim();
+    if (!rawValue) {
+      return {};
+    }
+
+    const parsed = JSON.parse(rawValue);
+    if (!isPlainObject(parsed)) {
+      throw new Error('El contenido dinamico debe ser un objeto JSON valido.');
+    }
+
+    return parsed;
+  }
+
+  function deepMerge(base, override) {
+    if (Array.isArray(base)) {
+      return Array.isArray(override) ? override : cloneValue(base);
+    }
+
+    if (!isPlainObject(base)) {
+      return override === undefined ? base : override;
+    }
+
+    const result = { ...base };
+    const source = isPlainObject(override) ? override : {};
+
+    Object.keys(source).forEach((key) => {
+      const baseValue = base[key];
+      const overrideValue = source[key];
+
+      if (Array.isArray(baseValue)) {
+        result[key] = Array.isArray(overrideValue) ? overrideValue : cloneValue(baseValue);
+        return;
+      }
+
+      if (isPlainObject(baseValue)) {
+        result[key] = deepMerge(baseValue, overrideValue);
+        return;
+      }
+
+      result[key] = overrideValue === undefined || overrideValue === null ? baseValue : overrideValue;
+    });
+
+    return result;
+  }
+
+  function normalizeSettings(settings) {
+    if (!settings) {
+      return null;
+    }
+
+    return {
+      ...settings,
+      homepage_content: deepMerge(defaultHomepageContent(), normalizeObject(settings.homepage_content))
+    };
+  }
+
   function getAdminToken() {
     try {
       return window.localStorage.getItem(tokenStorageKey);
@@ -286,6 +501,11 @@
     elements.settingsForm.whatsapp_message.value = state.settings.whatsapp_message || '';
     elements.settingsForm.chatbot_enabled.checked = Boolean(state.settings.chatbot_enabled);
     elements.settingsForm.chatbot_embed_code.value = state.settings.chatbot_embed_code || '';
+    elements.settingsForm.homepage_content_json.value = JSON.stringify(
+      state.settings.homepage_content || defaultHomepageContent(),
+      null,
+      2
+    );
   }
 
   function resetTripForm() {
@@ -345,7 +565,7 @@
 
   async function refreshAndRender(successMessage) {
     const data = await request(API.bootstrap, { method: 'GET' });
-    state.settings = data.settings;
+    state.settings = normalizeSettings(data.settings);
     state.trips = data.trips || [];
     state.departures = data.departures || [];
     state.bookings = data.bookings || [];
@@ -366,7 +586,7 @@
     if (storedToken) {
       try {
         const data = await request(API.bootstrap, { method: 'GET' });
-        state.settings = data.settings;
+        state.settings = normalizeSettings(data.settings);
         state.trips = data.trips || [];
         state.departures = data.departures || [];
         state.bookings = data.bookings || [];
@@ -490,6 +710,15 @@
   async function submitSettings(event) {
     event.preventDefault();
     const formData = new FormData(elements.settingsForm);
+    let homepageContent = {};
+
+    try {
+      homepageContent = parseJsonObjectStrict(formData.get('homepage_content_json'));
+    } catch (error) {
+      setAlert(error.message || 'El JSON del home no es valido.', 'error');
+      return;
+    }
+
     const payload = {
       company_name: formData.get('company_name'),
       hero_badge: formData.get('hero_badge'),
@@ -500,7 +729,8 @@
       whatsapp_number: formData.get('whatsapp_number'),
       whatsapp_message: formData.get('whatsapp_message'),
       chatbot_enabled: formData.get('chatbot_enabled') === 'on',
-      chatbot_embed_code: formData.get('chatbot_embed_code') || ''
+      chatbot_embed_code: formData.get('chatbot_embed_code') || '',
+      homepage_content: homepageContent
     };
 
     setAlert('Guardando configuracion...');

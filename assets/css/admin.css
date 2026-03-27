@@ -28,3 +28,16 @@
   width: auto;
   margin-right: 8px;
 }
+
+.json-textarea {
+  min-height: 420px;
+  font-family: "Consolas", "SFMono-Regular", "Courier New", monospace;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.admin-help {
+  margin: -2px 0 4px;
+  color: var(--muted);
+  line-height: 1.65;
+}

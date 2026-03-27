@@ -1,10 +1,11 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="es-MX">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Jalisco Rutas | Viajes y rutas turisticas desde Guadalajara</title>
     <meta
+      id="metaDescription"
       name="description"
       content="Vende viajes y rutas turisticas desde Guadalajara con catalogo vivo, reservas por WhatsApp y panel administrable."
     />
@@ -38,46 +39,40 @@
           <span class="brand-mark">RG</span>
           <span>
             <strong id="brandName">Jalisco Rutas</strong>
-            <small>Experiencias turisticas en Jalisco</small>
+            <small id="brandSubtitle">Experiencias turisticas en Jalisco</small>
           </span>
         </a>
         <nav class="main-nav">
-          <a href="#salidas">Tours</a>
-          <a href="#colecciones">Colecciones</a>
-          <a href="#porque">Por que elegirnos</a>
-          <a href="#faq">FAQ</a>
-          <a href="#contacto">Contacto</a>
-          <a class="nav-cta" href="#contacto">Cotizar ahora</a>
+          <div class="main-nav-links" id="mainNavLinks">
+            <a href="#salidas">Tours</a>
+            <a href="#colecciones">Colecciones</a>
+            <a href="#porque">Por que elegirnos</a>
+            <a href="#faq">FAQ</a>
+            <a href="#contacto">Contacto</a>
+          </div>
+          <a class="nav-cta" id="mainNavCta" href="#contacto">Cotizar ahora</a>
         </nav>
       </header>
 
       <main id="inicio">
         <section class="hero-v2">
           <div class="hero-copy">
-            <span class="eyebrow">Tours en Jalisco</span>
+            <span class="eyebrow" id="heroEyebrow">Tours en Jalisco</span>
             <h1 id="heroTitle">Viajes y rutas turisticas con cupo real y apartado rapido</h1>
             <p id="heroSubtitle">
               Publica nuevas salidas cada semana, recibe reservas desde Guadalajara y la Zona Metropolitana, y
               administra todo desde un dashboard conectado a Supabase.
             </p>
             <div class="hero-actions">
-              <a class="button button-primary" href="#salidas">Ver tours disponibles</a>
+              <a class="button button-primary" id="heroPrimaryButton" href="#salidas">Ver tours disponibles</a>
               <a class="button button-secondary" id="heroWhatsappButton" href="#" target="_blank" rel="noreferrer">
                 Hablar por WhatsApp
               </a>
             </div>
-            <div class="hero-facts">
+            <div class="hero-facts" id="heroFacts">
               <article>
                 <strong>Salidas nuevas</strong>
                 <span>Cada mes puedes cambiar rutas, fechas y precios sin tocar codigo.</span>
-              </article>
-              <article>
-                <strong>Ventas directas</strong>
-                <span>Formulario, chatbot y WhatsApp listos para convertir interes en reserva.</span>
-              </article>
-              <article>
-                <strong>Enfoque local</strong>
-                <span>Contenido orientado a clientes de Guadalajara, Zapopan y toda la ZMG.</span>
               </article>
             </div>
           </div>
@@ -86,10 +81,10 @@
             <div class="hero-panel">
               <div class="hero-panel-head">
                 <div>
-                  <p class="mini-label">Experiencias destacadas</p>
-                  <h2>Rutas listas para vender</h2>
+                  <p class="mini-label" id="featuredLabel">Experiencias destacadas</p>
+                  <h2 id="featuredTitle">Rutas listas para vender</h2>
                 </div>
-                <a href="#salidas">Ver todas</a>
+                <a id="featuredLink" href="#salidas">Ver todas</a>
               </div>
               <div class="hero-featured-grid" id="heroFeaturedGrid">
                 <article class="featured-placeholder">
@@ -104,60 +99,38 @@
           </div>
         </section>
 
-        <section class="trust-strip" id="porque">
+        <section class="trust-strip" id="trustStrip">
           <article>
             <strong>50+</strong>
             <span>Salidas potenciales al ano entre rutas, experiencias y escapadas.</span>
-          </article>
-          <article>
-            <strong>Cupo visible</strong>
-            <span>Urgencia comercial real para que la gente reserve antes de que se llene.</span>
-          </article>
-          <article>
-            <strong>Soporte rapido</strong>
-            <span>WhatsApp, formulario y espacio para chatbot comercial embebido.</span>
-          </article>
-          <article>
-            <strong>Panel editable</strong>
-            <span>Publica, pausa y cambia salidas desde tu dashboard administrativo.</span>
           </article>
         </section>
 
         <section class="collections" id="colecciones">
           <div class="section-head">
             <div>
-              <span class="eyebrow">Colecciones comerciales</span>
-              <h2>Organiza tu oferta como una agencia que siempre tiene algo nuevo</h2>
-              <p>
+              <span class="eyebrow" id="collectionsLabel">Colecciones comerciales</span>
+              <h2 id="collectionsTitle">Organiza tu oferta como una agencia que siempre tiene algo nuevo</h2>
+              <p id="collectionsDescription">
                 La referencia que compartiste trabaja muy bien el efecto de abundancia. Aqui dejamos una estructura
                 pensada para vender rutas clasicas, premium y escapadas de fin de semana.
               </p>
             </div>
           </div>
-          <div class="collection-grid">
+          <div class="collection-grid" id="collectionGrid">
             <article>
               <span>01</span>
               <h3>Clasicos de Jalisco</h3>
               <p>Tequila, Chapala, Ajijic, centro historico y pueblos magicos con alta demanda continua.</p>
-            </article>
-            <article>
-              <span>02</span>
-              <h3>Experiencias premium</h3>
-              <p>Tren, catas, helicoptero, globo, gastronomia o recorridos privados de mayor ticket.</p>
-            </article>
-            <article>
-              <span>03</span>
-              <h3>Salidas mensuales</h3>
-              <p>Rutas nuevas, temporadas especiales y viajes de oportunidad para redes y campanas semanales.</p>
             </article>
           </div>
         </section>
 
         <section class="section-head section-head-split" id="salidas">
           <div>
-            <span class="eyebrow">Catalogo activo</span>
-            <h2>Proximas salidas y rutas disponibles</h2>
-            <p>
+            <span class="eyebrow" id="catalogLabel">Catalogo activo</span>
+            <h2 id="catalogTitle">Proximas salidas y rutas disponibles</h2>
+            <p id="catalogDescription">
               Cada salida muestra fecha, punto de encuentro, precio estimado y disponibilidad. Todo sale de Supabase
               cuando conectes tus llaves.
             </p>
@@ -175,32 +148,18 @@
           </article>
         </section>
 
-        <section class="proof-section">
+        <section class="proof-section" id="proofSection">
           <div class="section-head">
             <div>
-              <span class="eyebrow">Confianza</span>
-              <h2>Un layout pensado para convertir como un sitio de tours consolidado</h2>
+              <span class="eyebrow" id="proofLabel">Confianza</span>
+              <h2 id="proofTitle">Un layout pensado para convertir como un sitio de tours consolidado</h2>
             </div>
           </div>
-          <div class="proof-grid">
+          <div class="proof-grid" id="proofGrid">
             <article class="proof-score">
               <p class="mini-label">Recomendaciones</p>
               <strong>4.9 / 5</strong>
               <span>Presenta reputacion, opiniones y claridad visual para reducir friccion en la compra.</span>
-            </article>
-            <article class="testimonial-card">
-              <p>
-                "La estructura da sensacion de agencia real: muchos tours, contacto directo, confianza y llamados
-                claros para reservar."
-              </p>
-              <strong>Enfoque ideal para vender desde redes</strong>
-            </article>
-            <article class="testimonial-card">
-              <p>
-                "En movil el usuario puede ver tours, precio, cupo y CTA sin perderse. Esa parte la vamos a cuidar al
-                maximo."
-              </p>
-              <strong>Diseno responsivo primero</strong>
             </article>
           </div>
         </section>
@@ -208,25 +167,15 @@
         <section class="workflow" id="proceso">
           <div class="section-head">
             <div>
-              <span class="eyebrow">Como apartan tus clientes</span>
-              <h2>Un flujo directo para vender por semana</h2>
+              <span class="eyebrow" id="workflowLabel">Como apartan tus clientes</span>
+              <h2 id="workflowTitle">Un flujo directo para vender por semana</h2>
             </div>
           </div>
-          <div class="workflow-grid">
+          <div class="workflow-grid" id="workflowGrid">
             <article>
               <strong>1</strong>
               <h3>Publicas el tour</h3>
               <p>Creas el viaje, eliges fecha, cupo, punto de salida, precio y texto comercial desde el dashboard.</p>
-            </article>
-            <article>
-              <strong>2</strong>
-              <h3>El cliente aparta</h3>
-              <p>Ve la salida, deja sus datos y pasa a WhatsApp para cerrar la reserva contigo.</p>
-            </article>
-            <article>
-              <strong>3</strong>
-              <h3>Tu confirmas y llenas cupo</h3>
-              <p>Revisas reservas y mensajes desde el panel para dar seguimiento rapido.</p>
             </article>
           </div>
         </section>
@@ -234,39 +183,27 @@
         <section class="faq" id="faq">
           <div class="section-head">
             <div>
-              <span class="eyebrow">Preguntas frecuentes</span>
-              <h2>La informacion clave antes de reservar</h2>
+              <span class="eyebrow" id="faqLabel">Preguntas frecuentes</span>
+              <h2 id="faqTitle">La informacion clave antes de reservar</h2>
             </div>
           </div>
-          <div class="faq-list">
+          <div class="faq-list" id="faqList">
             <details open>
               <summary>Desde donde salen los viajes?</summary>
               <p>El sitio esta pensado para operar salidas desde Guadalajara y toda la Zona Metropolitana.</p>
-            </details>
-            <details>
-              <summary>Puedo actualizar tours cada mes sin tocar codigo?</summary>
-              <p>Si. El dashboard administra viajes, salidas, cupos, textos del sitio y datos de contacto.</p>
-            </details>
-            <details>
-              <summary>Como se aparta un viaje?</summary>
-              <p>El cliente deja sus datos, la reserva queda registrada y se le dirige a WhatsApp para confirmar el cierre contigo.</p>
-            </details>
-            <details>
-              <summary>El sitio ya esta pensado para celular?</summary>
-              <p>Si. Esta nueva version prioriza lectura, botones y tarjetas para que funcione muy bien en movil.</p>
             </details>
           </div>
         </section>
 
         <section class="contact" id="contacto">
           <div class="contact-card">
-            <span class="eyebrow">Contacto directo</span>
-            <h2>Recibe solicitudes incluso cuando no estas conectado</h2>
-            <p>
+            <span class="eyebrow" id="contactLabel">Contacto directo</span>
+            <h2 id="contactTitle">Recibe solicitudes incluso cuando no estas conectado</h2>
+            <p id="contactDescription">
               Este formulario guarda mensajes en Supabase para seguimiento comercial. Tambien dejas salida rapida a
               WhatsApp para cerrar reservas de forma inmediata.
             </p>
-            <div class="contact-points">
+            <div class="contact-points" id="contactPoints">
               <a href="#salidas">Ver tours disponibles</a>
               <a id="contactPhoneLinkSecondary" href="tel:+523312469036">+52 33 1246 9036</a>
               <a id="contactWhatsappLinkSecondary" href="#" target="_blank" rel="noreferrer">Atencion por WhatsApp</a>
@@ -274,29 +211,30 @@
           </div>
 
           <form class="contact-form" id="contactForm">
-            <h3>Solicita informacion o cotizacion</h3>
-            <label>
+            <h3 id="contactFormTitle">Solicita informacion o cotizacion</h3>
+            <label id="contactNameLabel">
               Nombre
-              <input type="text" name="full_name" placeholder="Tu nombre completo" required />
+              <input id="contactNameInput" type="text" name="full_name" placeholder="Tu nombre completo" required />
             </label>
-            <label>
+            <label id="contactEmailLabel">
               Correo
-              <input type="email" name="email" placeholder="tu@correo.com" required />
+              <input id="contactEmailInput" type="email" name="email" placeholder="tu@correo.com" required />
             </label>
-            <label>
+            <label id="contactPhoneLabel">
               Telefono
-              <input type="tel" name="phone" placeholder="33 1234 5678" />
+              <input id="contactPhoneInput" type="tel" name="phone" placeholder="33 1234 5678" />
             </label>
-            <label>
+            <label id="contactMessageLabel">
               Mensaje
               <textarea
+                id="contactMessageInput"
                 name="message"
                 rows="5"
                 placeholder="Que ruta te interesa, cuantas personas viajan y para que fecha?"
                 required
               ></textarea>
             </label>
-            <button class="button button-primary" type="submit">Enviar mensaje</button>
+            <button class="button button-primary" id="contactSubmitButton" type="submit">Enviar mensaje</button>
             <p class="form-feedback" id="contactFeedback"></p>
           </form>
         </section>
@@ -305,11 +243,10 @@
       <footer class="site-footer">
         <div>
           <strong id="footerBrand">Jalisco Rutas</strong>
-          <p>Sitio preparado para vender viajes, rutas y experiencias turisticas desde Guadalajara.</p>
+          <p id="footerDescription">Sitio preparado para vender viajes, rutas y experiencias turisticas desde Guadalajara.</p>
         </div>
-        <div>
+        <div id="footerLinks">
           <a href="#salidas">Tours</a>
-          <a href="#contacto">Contacto</a>
           <a href="#contacto">Contacto</a>
         </div>
       </footer>
@@ -356,6 +293,3 @@
     </div>
   </body>
 </html>
-
-
-

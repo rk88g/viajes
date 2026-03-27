@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="es-MX">
   <head>
     <meta charset="UTF-8" />
@@ -252,6 +252,19 @@
                   placeholder="Pega aqui el script de Tawk, Crisp, Landbot o el proveedor que vayas a usar"
                 ></textarea>
               </label>
+              <label>
+                Contenido dinamico del home en JSON
+                <textarea
+                  class="json-textarea"
+                  name="homepage_content_json"
+                  rows="22"
+                  spellcheck="false"
+                  placeholder="{ &quot;hero&quot;: { &quot;eyebrow&quot;: &quot;Tours en Jalisco&quot; } }"
+                ></textarea>
+              </label>
+              <p class="admin-help">
+                Aqui puedes editar todas las secciones dinamicas del home. Si quieres cambiar titulos, cards, FAQ, nav o footer, hazlo en este JSON.
+              </p>
               <button class="button button-primary" type="submit">Guardar configuracion</button>
             </form>
           </div>
@@ -365,10 +378,3 @@
     </main>
   </body>
 </html>
-
-
-
-
-
-
-
