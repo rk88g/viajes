@@ -1,9 +1,50 @@
-﻿<?php
+<?php
 declare(strict_types=1);
+
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+error_reporting(E_ALL);
 
 header('X-Frame-Options: SAMEORIGIN');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin-when-cross-origin');
+
+if (ob_get_level() === 0) {
+    ob_start();
+}
+
+set_error_handler(static function (int $severity, string $message, string $file, int $line): bool {
+    if (!(error_reporting() & $severity)) {
+        return false;
+    }
+
+    throw new ErrorException($message, 0, $severity, $file, $line);
+});
+
+register_shutdown_function(static function (): void {
+    $error = error_get_last();
+
+    if (!$error || !in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        return;
+    }
+
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
+    if (headers_sent() === false) {
+        http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+    }
+
+    echo json_encode(
+        [
+            'ok' => false,
+            'error' => sprintf('Error interno del servidor: %s', $error['message']),
+        ],
+        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+    );
+});
 
 function env_value(string $key, ?string $default = null): ?string
 {
@@ -81,6 +122,11 @@ function respond(array $payload, int $status = 200): never
 {
     http_response_code($status);
     header('Content-Type: application/json; charset=utf-8');
+
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
     echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
@@ -212,4 +258,3 @@ function map_departure(array $row): array
 
     return $row;
 }
-

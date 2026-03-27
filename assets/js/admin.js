@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
   const API = {
     session: './api/admin/session.php',
     login: './api/admin/login.php',
@@ -87,10 +87,19 @@
       ...options
     });
 
-    const data = await response.json().catch(() => ({ ok: false, error: 'Respuesta invalida del servidor' }));
+    const rawText = await response.text();
+    let data = null;
 
-    if (!response.ok || data.ok === false) {
-      throw new Error(data.error || 'Error inesperado');
+    try {
+      data = rawText ? JSON.parse(rawText) : null;
+    } catch (error) {
+      const compactText = rawText.replace(/\s+/g, ' ').trim().slice(0, 220);
+      const fallbackMessage = compactText || `El servidor respondio con estado ${response.status}`;
+      throw new Error(`Respuesta invalida del servidor (${response.status}). ${fallbackMessage}`);
+    }
+
+    if (!response.ok || !data || data.ok === false) {
+      throw new Error(data?.error || `Error del servidor (${response.status})`);
     }
 
     return data;
@@ -120,7 +129,7 @@
 
   function renderTripOptions() {
     const options = state.trips
-      .map((trip) => `<option value="${trip.id}">${trip.title} · ${trip.destination}</option>`)
+      .map((trip) => `<option value="${trip.id}">${trip.title} � ${trip.destination}</option>`)
       .join('');
     elements.departureTripSelect.innerHTML = `<option value="">Selecciona un viaje</option>${options}`;
   }
