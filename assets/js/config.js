@@ -1,8 +1,4 @@
-﻿window.VIAJES_CONFIG = {
-  supabaseUrl: "https://cvrremzemwovoaojxsae.supabase.co",
-  supabaseAnonKey: "YOUR_SUPABASE_ANON_KEY",
-  supabaseFunctionsBaseUrl: "https://cvrremzemwovoaojxsae.supabase.co/functions/v1",
-  stripeCheckoutFunction: "create-checkout-session",
+window.VIAJES_CONFIG = {
   company: {
     companyName: "Jalisco Rutas",
     cityLabel: "Guadalajara y Zona Metropolitana",
