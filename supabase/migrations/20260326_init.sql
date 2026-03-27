@@ -26,7 +26,7 @@ create table if not exists public.site_settings (
   hero_title text not null default 'Viajes y rutas turisticas con cupo real, apartado rapido y pago en linea',
   hero_subtitle text not null default 'Convierte visitas en reservas con una pagina informativa, catalogo vivo y atencion inmediata por WhatsApp.',
   support_email text not null default 'hola@jalisconrutas.com',
-  support_phone text not null default '+52 33 0000 0000',
+  support_phone text not null default '+52 33 1246 9036',
   whatsapp_number text not null default '523312469036',
   whatsapp_message text not null default 'Hola, quiero informacion sobre los proximos viajes y rutas turisticas.',
   chatbot_enabled boolean not null default false,
@@ -331,7 +331,7 @@ values (
   'Viajes y rutas turisticas con cupo real, apartado rapido y pago en linea',
   'Convierte visitas en reservas con una pagina informativa, catalogo vivo y atencion inmediata por WhatsApp.',
   'hola@jalisconrutas.com',
-  '+52 33 0000 0000',
+  '+52 33 1246 9036',
   '523312469036',
   'Hola, quiero informacion sobre los proximos viajes y rutas turisticas.'
 )
@@ -405,6 +405,7 @@ values
   ((select id from public.trips where slug = 'ruta-tequila-premium'), current_date + 7, current_date + 7, 18, 5, 890, 'open', 'Salida ideal para pauta en redes el fin de semana.'),
   ((select id from public.trips where slug = 'mazamitla-bosque'), current_date + 14, current_date + 14, 20, 8, 760, 'open', 'Ruta con enfoque familiar.'),
   ((select id from public.trips where slug = 'chapala-ajijic-atardecer'), current_date + 21, current_date + 21, 16, 4, 690, 'open', 'Salida accesible para captar nuevos clientes.');
+
 
 
 
