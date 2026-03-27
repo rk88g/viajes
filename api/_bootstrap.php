@@ -41,7 +41,7 @@ function db(): PDO
         $port = (int) env_value('SUPABASE_DB_PORT', '5432');
         $dbName = env_value('SUPABASE_DB_NAME', 'postgres');
         $user = env_value('SUPABASE_DB_USER', 'postgres');
-        $pass = env_value('SUPABASE_DB_PASSWORD', '');
+        $pass = env_value('SUPABASE_DB_PASSWORD', 'UZDk2DsL8zBeX0Wb');
     }
 
     if ($host === '' || $user === '' || $pass === '') {
