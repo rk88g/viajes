@@ -10,9 +10,9 @@ try {
 
     $stmt = db()->prepare(
         'insert into public.site_settings
-         (id, company_name, hero_badge, hero_title, hero_subtitle, support_email, support_phone, whatsapp_number, whatsapp_message, chatbot_enabled, chatbot_embed_code)
+         (id, company_name, hero_badge, hero_title, hero_subtitle, support_email, support_phone, whatsapp_number, whatsapp_message, chatbot_enabled, chatbot_embed_code, homepage_content)
          values
-         (1, :company_name, :hero_badge, :hero_title, :hero_subtitle, :support_email, :support_phone, :whatsapp_number, :whatsapp_message, :chatbot_enabled, :chatbot_embed_code)
+         (1, :company_name, :hero_badge, :hero_title, :hero_subtitle, :support_email, :support_phone, :whatsapp_number, :whatsapp_message, cast(:chatbot_enabled as boolean), :chatbot_embed_code, cast(:homepage_content as jsonb))
          on conflict (id) do update set
            company_name = excluded.company_name,
            hero_badge = excluded.hero_badge,
@@ -23,7 +23,8 @@ try {
            whatsapp_number = excluded.whatsapp_number,
            whatsapp_message = excluded.whatsapp_message,
            chatbot_enabled = excluded.chatbot_enabled,
-           chatbot_embed_code = excluded.chatbot_embed_code'
+           chatbot_embed_code = excluded.chatbot_embed_code,
+           homepage_content = excluded.homepage_content'
     );
 
     $stmt->execute([
@@ -35,8 +36,9 @@ try {
         ':support_phone' => trim((string) ($payload['support_phone'] ?? '+52 33 1246 9036')),
         ':whatsapp_number' => trim((string) ($payload['whatsapp_number'] ?? '523312469036')),
         ':whatsapp_message' => trim((string) ($payload['whatsapp_message'] ?? '')),
-        ':chatbot_enabled' => !empty($payload['chatbot_enabled']),
+        ':chatbot_enabled' => !empty($payload['chatbot_enabled']) ? 'true' : 'false',
         ':chatbot_embed_code' => (string) ($payload['chatbot_embed_code'] ?? ''),
+        ':homepage_content' => json_encode($payload['homepage_content'] ?? new stdClass(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
     ]);
 
     success(['message' => 'Configuracion guardada correctamente']);

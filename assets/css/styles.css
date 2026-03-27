@@ -150,6 +150,13 @@ summary {
   flex-wrap: wrap;
 }
 
+.main-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
 .main-nav a {
   color: var(--muted);
   font-weight: 700;
