@@ -14,7 +14,9 @@
     bootstrap: apiUrl('/api/admin/bootstrap.php'),
     trips: apiUrl('/api/admin/trips.php'),
     departures: apiUrl('/api/admin/departures.php'),
-    settings: apiUrl('/api/admin/settings.php')
+    settings: apiUrl('/api/admin/settings.php'),
+    bookings: apiUrl('/api/admin/bookings.php'),
+    messages: apiUrl('/api/admin/messages.php')
   };
 
   const elements = {
@@ -373,11 +375,14 @@
   }
 
   function actionBadge(value) {
-    if (value === 'paid' || value === 'confirmed' || value === 'published') {
+    if (value === 'paid' || value === 'confirmed' || value === 'published' || value === 'contacted') {
       return `<span class="pill pill-success">${value}</span>`;
     }
-    if (value === 'pending_payment' || value === 'unpaid' || value === 'open') {
+    if (value === 'pending_payment' || value === 'unpaid' || value === 'open' || value === 'new') {
       return `<span class="pill pill-warning">${value}</span>`;
+    }
+    if (value === 'refunded' || value === 'closed') {
+      return `<span class="pill pill-muted">${value}</span>`;
     }
     return `<span class="pill pill-muted">${value || 'n/a'}</span>`;
   }
@@ -385,7 +390,9 @@
   function renderMetrics() {
     elements.metricTrips.textContent = state.trips.filter((trip) => trip.published).length;
     elements.metricDepartures.textContent = state.departures.filter((departure) => departure.status === 'open').length;
-    elements.metricBookings.textContent = state.bookings.filter((booking) => booking.payment_status !== 'paid').length;
+    elements.metricBookings.textContent = state.bookings.filter(
+      (booking) => booking.status === 'pending_payment' || booking.payment_status === 'unpaid'
+    ).length;
     elements.metricMessages.textContent = state.messages.filter((message) => message.status === 'new').length;
   }
 
@@ -446,9 +453,54 @@
       .join('');
   }
 
+  function bookingActionsTemplate(booking) {
+    const actions = [];
+
+    if (booking.payment_status !== 'paid' && booking.status !== 'cancelled') {
+      actions.push(
+        `<button class="action-link" type="button" data-action="mark-booking-paid" data-id="${booking.id}">Marcar pagada</button>`
+      );
+      actions.push(
+        `<button class="action-link" type="button" data-action="cancel-booking" data-id="${booking.id}">Cancelar</button>`
+      );
+    }
+
+    if (booking.payment_status === 'paid') {
+      actions.push(
+        `<button class="action-link" type="button" data-action="refund-booking" data-id="${booking.id}">Reembolsar</button>`
+      );
+    }
+
+    return actions.length ? actions.join('<br />') : '<span class="pill pill-muted">Sin acciones</span>';
+  }
+
+  function messageActionsTemplate(message) {
+    const actions = [];
+
+    if (message.status === 'new') {
+      actions.push(
+        `<button class="action-link" type="button" data-action="message-contacted" data-id="${message.id}">Marcar visto</button>`
+      );
+    }
+
+    if (message.status !== 'closed') {
+      actions.push(
+        `<button class="action-link" type="button" data-action="message-closed" data-id="${message.id}">Cerrar</button>`
+      );
+    }
+
+    if (message.status === 'closed') {
+      actions.push(
+        `<button class="action-link" type="button" data-action="message-reopen" data-id="${message.id}">Reabrir</button>`
+      );
+    }
+
+    return actions.join('<br />');
+  }
+
   function renderBookingsTable() {
     if (!state.bookings.length) {
-      elements.bookingsTableBody.innerHTML = '<tr><td colspan="5">Sin reservas.</td></tr>';
+      elements.bookingsTableBody.innerHTML = '<tr><td colspan="6">Sin reservas.</td></tr>';
       return;
     }
 
@@ -460,7 +512,8 @@
             <td>${booking.trip_title_snapshot || 'Viaje'}<br /><small>${friendlyDate(booking.departure_date_snapshot)}</small></td>
             <td>${booking.seats_reserved}</td>
             <td>${currency(booking.total_amount)}</td>
-            <td>${actionBadge(booking.payment_status)}</td>
+            <td>${actionBadge(booking.status)}<br />${actionBadge(booking.payment_status)}</td>
+            <td>${bookingActionsTemplate(booking)}</td>
           </tr>
         `
       )
@@ -469,7 +522,7 @@
 
   function renderMessagesTable() {
     if (!state.messages.length) {
-      elements.messagesTableBody.innerHTML = '<tr><td colspan="3">Sin mensajes.</td></tr>';
+      elements.messagesTableBody.innerHTML = '<tr><td colspan="4">Sin mensajes.</td></tr>';
       return;
     }
 
@@ -480,6 +533,7 @@
             <td><strong>${message.full_name}</strong><br />${actionBadge(message.status)}</td>
             <td>${message.email}<br />${message.phone || 'Sin telefono'}</td>
             <td>${message.message}</td>
+            <td>${messageActionsTemplate(message)}</td>
           </tr>
         `
       )
@@ -746,6 +800,30 @@
     }
   }
 
+  async function updateBookingStatus(bookingId, action, successMessage) {
+    try {
+      await request(API.bookings, {
+        method: 'POST',
+        body: JSON.stringify({ id: bookingId, action })
+      });
+      await refreshAndRender(successMessage);
+    } catch (error) {
+      setAlert(error.message, 'error');
+    }
+  }
+
+  async function updateMessageStatus(messageId, status, successMessage) {
+    try {
+      await request(API.messages, {
+        method: 'POST',
+        body: JSON.stringify({ id: messageId, status })
+      });
+      await refreshAndRender(successMessage);
+    } catch (error) {
+      setAlert(error.message, 'error');
+    }
+  }
+
   async function removeTrip(tripId) {
     if (!window.confirm('Eliminar este viaje? Tambien se eliminaran sus salidas.')) {
       return;
@@ -815,6 +893,24 @@
       }
       if (action === 'delete-departure') {
         removeDeparture(id);
+      }
+      if (action === 'mark-booking-paid') {
+        updateBookingStatus(id, 'mark_paid', 'Reserva marcada como pagada y cupo actualizado.');
+      }
+      if (action === 'cancel-booking') {
+        updateBookingStatus(id, 'cancel', 'Reserva cancelada correctamente.');
+      }
+      if (action === 'refund-booking') {
+        updateBookingStatus(id, 'refund', 'Reserva reembolsada y cupo liberado.');
+      }
+      if (action === 'message-contacted') {
+        updateMessageStatus(id, 'contacted', 'Mensaje marcado como visto.');
+      }
+      if (action === 'message-closed') {
+        updateMessageStatus(id, 'closed', 'Mensaje cerrado.');
+      }
+      if (action === 'message-reopen') {
+        updateMessageStatus(id, 'new', 'Mensaje reabierto.');
       }
     });
   }
