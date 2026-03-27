@@ -16,7 +16,8 @@
     departures: apiUrl('/api/admin/departures.php'),
     settings: apiUrl('/api/admin/settings.php'),
     bookings: apiUrl('/api/admin/bookings.php'),
-    messages: apiUrl('/api/admin/messages.php')
+    messages: apiUrl('/api/admin/messages.php'),
+    income: apiUrl('/api/admin/income.php')
   };
 
   const elements = {
@@ -29,17 +30,23 @@
     tripForm: document.querySelector('#tripForm'),
     departureForm: document.querySelector('#departureForm'),
     settingsForm: document.querySelector('#settingsForm'),
+    incomeForm: document.querySelector('#incomeForm'),
     departureTripSelect: document.querySelector('#departureTripSelect'),
     tripsTableBody: document.querySelector('#tripsTableBody'),
     departuresTableBody: document.querySelector('#departuresTableBody'),
     bookingsTableBody: document.querySelector('#bookingsTableBody'),
     messagesTableBody: document.querySelector('#messagesTableBody'),
+    incomeTableBody: document.querySelector('#incomeTableBody'),
+    incomeSummaryTableBody: document.querySelector('#incomeSummaryTableBody'),
     metricTrips: document.querySelector('#metricTrips'),
     metricDepartures: document.querySelector('#metricDepartures'),
     metricBookings: document.querySelector('#metricBookings'),
     metricMessages: document.querySelector('#metricMessages'),
+    metricIncome: document.querySelector('#metricIncome'),
     resetTripButton: document.querySelector('#resetTripButton'),
-    resetDepartureButton: document.querySelector('#resetDepartureButton')
+    resetDepartureButton: document.querySelector('#resetDepartureButton'),
+    resetIncomeButton: document.querySelector('#resetIncomeButton'),
+    scrollTopButton: document.querySelector('#scrollTopButton')
   };
 
   const state = {
@@ -48,6 +55,8 @@
     departures: [],
     bookings: [],
     messages: [],
+    incomeEntries: [],
+    incomeSummary: [],
     settings: null
   };
 
@@ -294,6 +303,15 @@
     }).format(Number(value || 0));
   }
 
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function friendlyDate(dateValue) {
     if (!dateValue) {
       return 'Sin fecha';
@@ -304,6 +322,17 @@
       month: 'short',
       year: 'numeric'
     }).format(new Date(`${dateValue}T12:00:00`));
+  }
+
+  function friendlyMonth(monthKey) {
+    if (!monthKey) {
+      return 'Mes';
+    }
+
+    return new Intl.DateTimeFormat('es-MX', {
+      month: 'long',
+      year: 'numeric'
+    }).format(new Date(`${monthKey}-01T12:00:00`));
   }
 
   function parseCsv(value) {
@@ -394,11 +423,15 @@
       (booking) => booking.status === 'pending_payment' || booking.payment_status === 'unpaid'
     ).length;
     elements.metricMessages.textContent = state.messages.filter((message) => message.status === 'new').length;
+
+    const currentMonthKey = new Date().toISOString().slice(0, 7);
+    const currentMonthSummary = state.incomeSummary.find((item) => item.month_key === currentMonthKey);
+    elements.metricIncome.textContent = currency(currentMonthSummary?.received_total || 0);
   }
 
   function renderTripOptions() {
     const options = state.trips
-      .map((trip) => `<option value="${trip.id}">${trip.title} · ${trip.destination}</option>`)
+      .map((trip) => `<option value="${trip.id}">${escapeHtml(trip.title)} · ${escapeHtml(trip.destination)}</option>`)
       .join('');
     elements.departureTripSelect.innerHTML = `<option value="">Selecciona un viaje</option>${options}`;
   }
@@ -413,8 +446,8 @@
       .map(
         (trip) => `
           <tr>
-            <td><strong>${trip.title}</strong><br /><small>${trip.slug}</small></td>
-            <td>${trip.destination}</td>
+            <td><strong>${escapeHtml(trip.title)}</strong><br /><small>${escapeHtml(trip.slug)}</small></td>
+            <td>${escapeHtml(trip.destination)}</td>
             <td>${currency(trip.price)}</td>
             <td>${trip.published ? actionBadge('published') : actionBadge('draft')}</td>
             <td>
@@ -439,7 +472,7 @@
         const available = Math.max((departure.capacity || 0) - (departure.booked_count || 0), 0);
         return `
           <tr>
-            <td><strong>${departure.trip?.title || 'Viaje'}</strong><br /><small>${departure.trip?.destination || ''}</small></td>
+            <td><strong>${escapeHtml(departure.trip?.title || 'Viaje')}</strong><br /><small>${escapeHtml(departure.trip?.destination || '')}</small></td>
             <td>${friendlyDate(departure.departure_date)}</td>
             <td>${available} disponibles de ${departure.capacity}</td>
             <td>${currency(finalPrice)}</td>
@@ -450,6 +483,62 @@
           </tr>
         `;
       })
+      .join('');
+  }
+
+  function renderIncomeTable() {
+    if (!state.incomeEntries.length) {
+      elements.incomeTableBody.innerHTML = '<tr><td colspan="5">Sin ingresos registrados.</td></tr>';
+      return;
+    }
+
+    elements.incomeTableBody.innerHTML = state.incomeEntries
+      .map((entry) => {
+        const isManual = entry.source_type === 'manual';
+        return `
+          <tr>
+            <td>
+              <strong>${escapeHtml(entry.concept)}</strong><br />
+              <small>${escapeHtml(entry.category || 'General')}${entry.customer_name ? ` · ${escapeHtml(entry.customer_name)}` : ''}</small>
+              ${
+                entry.payment_method || entry.reference_code
+                  ? `<br /><small>${escapeHtml(entry.payment_method || 'Metodo sin definir')}${entry.reference_code ? ` · Ref. ${escapeHtml(entry.reference_code)}` : ''}</small>`
+                  : ''
+              }
+              ${entry.notes ? `<span class="admin-note"><strong>Notas:</strong> ${escapeHtml(entry.notes)}</span>` : ''}
+              <span class="pill pill-muted income-source">${entry.source_type === 'booking' ? 'auto' : 'manual'}</span>
+            </td>
+            <td>${friendlyDate(entry.payment_date)}${entry.due_date ? `<br /><small>Vence: ${friendlyDate(entry.due_date)}</small>` : ''}</td>
+            <td>${currency(entry.amount)}</td>
+            <td>${actionBadge(entry.status)}</td>
+            <td>
+              ${isManual ? `<button class="action-link" type="button" data-action="edit-income" data-id="${entry.id}">Editar</button><br />` : ''}
+              ${isManual ? `<button class="action-link" type="button" data-action="delete-income" data-id="${entry.id}">Eliminar</button>` : '<span class="pill pill-muted">Ligado a reserva</span>'}
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+  }
+
+  function renderIncomeSummary() {
+    if (!state.incomeSummary.length) {
+      elements.incomeSummaryTableBody.innerHTML = '<tr><td colspan="5">Sin resumen disponible.</td></tr>';
+      return;
+    }
+
+    elements.incomeSummaryTableBody.innerHTML = state.incomeSummary
+      .map(
+        (item) => `
+          <tr>
+            <td>${escapeHtml(friendlyMonth(item.month_key))}</td>
+            <td>${currency(item.received_total)}</td>
+            <td>${currency(item.pending_total)}</td>
+            <td>${currency(item.refunded_total)}</td>
+            <td>${item.entries_count}</td>
+          </tr>
+        `
+      )
       .join('');
   }
 
@@ -476,6 +565,10 @@
 
   function messageActionsTemplate(message) {
     const actions = [];
+
+    actions.push(
+      `<button class="action-link" type="button" data-action="message-note" data-id="${message.id}">Notas</button>`
+    );
 
     if (message.status === 'new') {
       actions.push(
@@ -508,8 +601,8 @@
       .map(
         (booking) => `
           <tr>
-            <td><strong>${booking.customer_name}</strong><br /><small>${booking.customer_email}<br />${booking.customer_phone || ''}</small></td>
-            <td>${booking.trip_title_snapshot || 'Viaje'}<br /><small>${friendlyDate(booking.departure_date_snapshot)}</small></td>
+            <td><strong>${escapeHtml(booking.customer_name)}</strong><br /><small>${escapeHtml(booking.customer_email)}<br />${escapeHtml(booking.customer_phone || '')}</small></td>
+            <td>${escapeHtml(booking.trip_title_snapshot || 'Viaje')}<br /><small>${friendlyDate(booking.departure_date_snapshot)}</small></td>
             <td>${booking.seats_reserved}</td>
             <td>${currency(booking.total_amount)}</td>
             <td>${actionBadge(booking.status)}<br />${actionBadge(booking.payment_status)}</td>
@@ -530,9 +623,12 @@
       .map(
         (message) => `
           <tr>
-            <td><strong>${message.full_name}</strong><br />${actionBadge(message.status)}</td>
-            <td>${message.email}<br />${message.phone || 'Sin telefono'}</td>
-            <td>${message.message}</td>
+            <td><strong>${escapeHtml(message.full_name)}</strong><br />${actionBadge(message.status)}</td>
+            <td>${escapeHtml(message.email)}<br />${escapeHtml(message.phone || 'Sin telefono')}</td>
+            <td>
+              ${escapeHtml(message.message)}
+              ${message.admin_notes ? `<span class="admin-note"><strong>Notas:</strong> ${escapeHtml(message.admin_notes)}</span>` : ''}
+            </td>
             <td>${messageActionsTemplate(message)}</td>
           </tr>
         `
@@ -573,6 +669,17 @@
     elements.departureForm.departure_id.value = '';
     elements.departureForm.booked_count.value = 0;
     elements.departureForm.status.value = 'open';
+  }
+
+  function resetIncomeForm() {
+    if (!elements.incomeForm) {
+      return;
+    }
+
+    elements.incomeForm.reset();
+    elements.incomeForm.income_id.value = '';
+    elements.incomeForm.status.value = 'received';
+    elements.incomeForm.payment_date.value = new Date().toISOString().slice(0, 10);
   }
 
   function fillTripForm(tripId) {
@@ -617,6 +724,26 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function fillIncomeForm(incomeId) {
+    const income = state.incomeEntries.find((item) => String(item.id) === String(incomeId));
+    if (!income || income.source_type !== 'manual') {
+      return;
+    }
+
+    elements.incomeForm.income_id.value = income.id;
+    elements.incomeForm.concept.value = income.concept || '';
+    elements.incomeForm.category.value = income.category || '';
+    elements.incomeForm.customer_name.value = income.customer_name || '';
+    elements.incomeForm.amount.value = income.amount || '';
+    elements.incomeForm.status.value = income.status || 'received';
+    elements.incomeForm.payment_date.value = income.payment_date || '';
+    elements.incomeForm.due_date.value = income.due_date || '';
+    elements.incomeForm.payment_method.value = income.payment_method || '';
+    elements.incomeForm.reference_code.value = income.reference_code || '';
+    elements.incomeForm.notes.value = income.notes || '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   async function refreshAndRender(successMessage) {
     const data = await request(API.bootstrap, { method: 'GET' });
     state.settings = normalizeSettings(data.settings);
@@ -624,13 +751,18 @@
     state.departures = data.departures || [];
     state.bookings = data.bookings || [];
     state.messages = data.messages || [];
+    state.incomeEntries = data.income_entries || [];
+    state.incomeSummary = data.income_summary || [];
     renderMetrics();
     renderTripOptions();
     renderTripsTable();
     renderDeparturesTable();
     renderBookingsTable();
     renderMessagesTable();
+    renderIncomeTable();
+    renderIncomeSummary();
     fillSettingsForm();
+    resetIncomeForm();
     setAlert(successMessage || 'Dashboard actualizado.');
   }
 
@@ -645,13 +777,18 @@
         state.departures = data.departures || [];
         state.bookings = data.bookings || [];
         state.messages = data.messages || [];
+        state.incomeEntries = data.income_entries || [];
+        state.incomeSummary = data.income_summary || [];
         renderMetrics();
         renderTripOptions();
         renderTripsTable();
         renderDeparturesTable();
         renderBookingsTable();
         renderMessagesTable();
+        renderIncomeTable();
+        renderIncomeSummary();
         fillSettingsForm();
+        resetIncomeForm();
         showAdminScreen({ email: 'Administrador' });
         setAlert('Sesion iniciada. Ya puedes administrar paquetes, salidas y mensajes.');
         return;
@@ -800,6 +937,38 @@
     }
   }
 
+  async function submitIncome(event) {
+    event.preventDefault();
+    const formData = new FormData(elements.incomeForm);
+    const payload = {
+      id: formData.get('income_id') || null,
+      concept: formData.get('concept'),
+      category: formData.get('category'),
+      customer_name: formData.get('customer_name') || '',
+      amount: Number(formData.get('amount')),
+      status: formData.get('status'),
+      payment_date: formData.get('payment_date'),
+      due_date: formData.get('due_date') || '',
+      payment_method: formData.get('payment_method') || '',
+      reference_code: formData.get('reference_code') || '',
+      notes: formData.get('notes') || '',
+      source_type: 'manual'
+    };
+
+    setAlert('Guardando ingreso...');
+
+    try {
+      await request(API.income, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      resetIncomeForm();
+      await refreshAndRender('Ingreso guardado correctamente.');
+    } catch (error) {
+      setAlert(error.message, 'error');
+    }
+  }
+
   async function updateBookingStatus(bookingId, action, successMessage) {
     try {
       await request(API.bookings, {
@@ -807,6 +976,44 @@
         body: JSON.stringify({ id: bookingId, action })
       });
       await refreshAndRender(successMessage);
+    } catch (error) {
+      setAlert(error.message, 'error');
+    }
+  }
+
+  async function updateMessageNote(messageId) {
+    const message = state.messages.find((item) => String(item.id) === String(messageId));
+    if (!message) {
+      return;
+    }
+
+    const note = window.prompt('Escribe una nota interna para identificar a este cliente:', message.admin_notes || '');
+    if (note === null) {
+      return;
+    }
+
+    try {
+      await request(API.messages, {
+        method: 'POST',
+        body: JSON.stringify({ id: messageId, admin_notes: note })
+      });
+      await refreshAndRender('Nota del cliente actualizada.');
+    } catch (error) {
+      setAlert(error.message, 'error');
+    }
+  }
+
+  async function removeIncome(incomeId) {
+    if (!window.confirm('Eliminar este ingreso manual?')) {
+      return;
+    }
+
+    try {
+      await request(API.income, {
+        method: 'DELETE',
+        body: JSON.stringify({ id: incomeId })
+      });
+      await refreshAndRender('Ingreso eliminado.');
     } catch (error) {
       setAlert(error.message, 'error');
     }
@@ -856,6 +1063,27 @@
     }
   }
 
+  function setupScrollTopButton() {
+    if (!elements.scrollTopButton) {
+      return;
+    }
+
+    const toggleVisibility = () => {
+      if (window.scrollY > 280) {
+        elements.scrollTopButton.classList.add('is-visible');
+      } else {
+        elements.scrollTopButton.classList.remove('is-visible');
+      }
+    };
+
+    window.addEventListener('scroll', toggleVisibility, { passive: true });
+    toggleVisibility();
+
+    elements.scrollTopButton.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
   function bindEvents() {
     elements.loginForm.addEventListener('submit', submitLogin);
     elements.logoutButton.addEventListener('click', async () => {
@@ -871,8 +1099,10 @@
     elements.tripForm.addEventListener('submit', submitTrip);
     elements.departureForm.addEventListener('submit', submitDeparture);
     elements.settingsForm.addEventListener('submit', submitSettings);
+    elements.incomeForm.addEventListener('submit', submitIncome);
     elements.resetTripButton.addEventListener('click', resetTripForm);
     elements.resetDepartureButton.addEventListener('click', resetDepartureForm);
+    elements.resetIncomeButton.addEventListener('click', resetIncomeForm);
 
     document.addEventListener('click', (event) => {
       const actionButton = event.target.closest('[data-action]');
@@ -894,6 +1124,12 @@
       if (action === 'delete-departure') {
         removeDeparture(id);
       }
+      if (action === 'edit-income') {
+        fillIncomeForm(id);
+      }
+      if (action === 'delete-income') {
+        removeIncome(id);
+      }
       if (action === 'mark-booking-paid') {
         updateBookingStatus(id, 'mark_paid', 'Reserva marcada como pagada y cupo actualizado.');
       }
@@ -906,6 +1142,9 @@
       if (action === 'message-contacted') {
         updateMessageStatus(id, 'contacted', 'Mensaje marcado como visto.');
       }
+      if (action === 'message-note') {
+        updateMessageNote(id);
+      }
       if (action === 'message-closed') {
         updateMessageStatus(id, 'closed', 'Mensaje cerrado.');
       }
@@ -917,6 +1156,7 @@
 
   async function init() {
     bindEvents();
+    setupScrollTopButton();
     await bootSession();
   }
 

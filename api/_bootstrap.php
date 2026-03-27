@@ -431,6 +431,78 @@ function map_departure(array $row): array
     return $row;
 }
 
+function map_income_entry(array $row): array
+{
+    foreach (['id'] as $field) {
+        if (isset($row[$field])) {
+            $row[$field] = (int) $row[$field];
+        }
+    }
+
+    if (isset($row['amount']) && $row['amount'] !== null) {
+        $row['amount'] = (float) $row['amount'];
+    }
+
+    return $row;
+}
+
+function sync_booking_income_entry(PDO $pdo, string $bookingId, string $incomeStatus): void
+{
+    $bookingStmt = $pdo->prepare(
+        'select id, trip_title_snapshot, customer_name, total_amount, departure_date_snapshot, paid_at, stripe_payment_intent
+         from public.bookings
+         where id = :id
+         limit 1'
+    );
+    $bookingStmt->execute([':id' => $bookingId]);
+    $booking = $bookingStmt->fetch();
+
+    if (!$booking) {
+        throw new RuntimeException('Reserva no encontrada para generar ingreso.');
+    }
+
+    $paymentDate = null;
+    if (!empty($booking['paid_at'])) {
+        $paymentDate = gmdate('Y-m-d', strtotime((string) $booking['paid_at']));
+    }
+
+    if (!$paymentDate) {
+        $paymentDate = gmdate('Y-m-d');
+    }
+
+    $stmt = $pdo->prepare(
+        'insert into public.income_entries
+         (concept, category, customer_name, amount, currency, status, payment_date, payment_method, reference_code, source_type, booking_id, notes)
+         values
+         (:concept, :category, :customer_name, :amount, :currency, :status, :payment_date, :payment_method, :reference_code, :source_type, :booking_id, :notes)
+         on conflict (booking_id) do update set
+           concept = excluded.concept,
+           category = excluded.category,
+           customer_name = excluded.customer_name,
+           amount = excluded.amount,
+           currency = excluded.currency,
+           status = excluded.status,
+           payment_date = excluded.payment_date,
+           payment_method = excluded.payment_method,
+           reference_code = excluded.reference_code,
+           notes = excluded.notes'
+    );
+    $stmt->execute([
+        ':concept' => 'Reserva pagada: ' . (string) ($booking['trip_title_snapshot'] ?? 'Viaje'),
+        ':category' => 'Reservas',
+        ':customer_name' => (string) ($booking['customer_name'] ?? ''),
+        ':amount' => (float) ($booking['total_amount'] ?? 0),
+        ':currency' => 'MXN',
+        ':status' => $incomeStatus,
+        ':payment_date' => $paymentDate,
+        ':payment_method' => 'Stripe / Confirmacion manual',
+        ':reference_code' => (string) ($booking['stripe_payment_intent'] ?? ''),
+        ':source_type' => 'booking',
+        ':booking_id' => $bookingId,
+        ':notes' => 'Generado automaticamente desde la reserva del ' . (string) ($booking['departure_date_snapshot'] ?? ''),
+    ]);
+}
+
 function request_scheme(): string
 {
     $forwarded = strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
@@ -696,6 +768,8 @@ function confirm_booking_payment(PDO $pdo, string $bookingId, ?string $paymentIn
         ':session_payload' => json_encode(['session' => $sessionPayload], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         ':id' => $bookingId,
     ]);
+
+    sync_booking_income_entry($pdo, $bookingId, 'received');
 }
 
 function cancel_unpaid_booking(PDO $pdo, string $bookingId): void
@@ -790,4 +864,6 @@ function refund_booking(PDO $pdo, string $bookingId): void
          where id = :id"
     );
     $bookingUpdateStmt->execute([':id' => $bookingId]);
+
+    sync_booking_income_entry($pdo, $bookingId, 'refunded');
 }
