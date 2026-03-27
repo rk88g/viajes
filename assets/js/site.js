@@ -1,13 +1,9 @@
 ﻿(function () {
   const config = window.VIAJES_CONFIG || {};
-  const readyForCheckout =
-    Boolean(config.supabaseUrl && config.supabaseAnonKey) &&
-    !String(config.supabaseUrl).includes('YOUR_PROJECT') &&
-    !String(config.supabaseAnonKey).includes('YOUR_SUPABASE');
-
   const API = {
     bootstrap: './api/bootstrap.php',
-    contact: './api/contact.php'
+    contact: './api/contact.php',
+    bookings: './api/bookings.php'
   };
 
   const demoCatalog = [
@@ -189,7 +185,7 @@
     return {
       company_name: row?.company_name || config.company?.companyName || 'Jalisco Rutas',
       hero_badge: row?.hero_badge || 'Salidas semanales desde Guadalajara y ZMG',
-      hero_title: row?.hero_title || 'Viajes y rutas turisticas con cupo real, apartado rapido y pago en linea',
+      hero_title: row?.hero_title || 'Viajes y rutas turisticas con cupo real y apartado rapido',
       hero_subtitle: row?.hero_subtitle || 'Convierte visitas en reservas con una pagina informativa, catalogo vivo y atencion inmediata por WhatsApp.',
       support_email: row?.support_email || config.company?.supportEmail || 'hola@jalisconrutas.com',
       support_phone: row?.support_phone || config.company?.supportPhone || '+52 33 1246 9036',
@@ -493,46 +489,34 @@
 
     elements.bookingFeedback.textContent = 'Preparando tu apartado...';
 
-    if (!readyForCheckout || !config.supabaseFunctionsBaseUrl || String(config.supabaseFunctionsBaseUrl).includes('YOUR_PROJECT')) {
-      const fallbackMessage = [
-        `Hola, quiero apartar ${seats} lugar(es).`,
-        `Viaje: ${departure.trip.title}`,
-        `Fecha: ${friendlyDate(departure.departure_date)}`,
-        `Cliente: ${payload.customer_name}`,
-        `Correo: ${payload.customer_email}`,
-        `Telefono: ${payload.customer_phone}`
-      ].join('\n');
-      window.open(whatsappUrl(fallbackMessage), '_blank', 'noopener,noreferrer');
-      elements.bookingFeedback.textContent = 'El checkout aun no esta configurado. Te mandamos a WhatsApp para cerrar la reserva.';
-      return;
-    }
-
     try {
-      const response = await fetch(`${config.supabaseFunctionsBaseUrl}/${config.stripeCheckoutFunction || 'create-checkout-session'}`, {
+      const response = await request(API.bookings, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: config.supabaseAnonKey,
-          Authorization: `Bearer ${config.supabaseAnonKey}`
-        },
         body: JSON.stringify({
-          departureId: Number(payload.departure_id),
-          seats,
-          customer: {
-            name: payload.customer_name,
-            email: payload.customer_email,
-            phone: payload.customer_phone
-          }
+          departure_id: Number(payload.departure_id),
+          seats_reserved: seats,
+          customer_name: payload.customer_name,
+          customer_email: payload.customer_email,
+          customer_phone: payload.customer_phone
         })
       });
 
-      const result = await response.json();
-
-      if (!response.ok || !result.checkoutUrl) {
-        throw new Error(result.error || 'No se pudo iniciar el pago');
+      if (response.checkout_url) {
+        window.location.href = response.checkout_url;
+        return;
       }
 
-      window.location.href = result.checkoutUrl;
+      if (response.whatsapp_url) {
+        window.open(response.whatsapp_url, '_blank', 'noopener,noreferrer');
+        closeBooking();
+        setStatus(
+          response.message || 'La reserva quedo registrada y continuamos por WhatsApp desde el backend.',
+          'success'
+        );
+        return;
+      }
+
+      throw new Error('No se pudo iniciar el checkout de la reserva.');
     } catch (error) {
       elements.bookingFeedback.textContent = error.message || 'Hubo un problema al iniciar el pago. Intenta otra vez o completa por WhatsApp.';
     }
@@ -555,7 +539,7 @@
 
     const params = new URLSearchParams(window.location.search);
     if (params.get('checkout') === 'success') {
-      setStatus('Pago completado. La reserva quedo registrada y puedes revisarla desde tu panel privado.');
+      setStatus('Reserva completada. Ya puedes revisarla desde tu panel privado.');
     }
     if (params.get('checkout') === 'cancelled') {
       setStatus('El checkout fue cancelado. Puedes intentar nuevamente desde cualquier salida.', 'error');

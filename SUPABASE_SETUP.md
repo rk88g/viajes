@@ -1,8 +1,8 @@
-﻿# Supabase Setup Seguro
+# Supabase Setup Seguro
 
 ## Que usa ahora el proyecto
 
-El sitio publico y el dashboard ya pueden leer y escribir por backend usando Railway + PHP + Supabase Postgres.
+El sitio publico, el dashboard y las reservas ya pueden leer y escribir por backend usando Railway + PHP + Supabase Postgres.
 
 ## Variables de entorno obligatorias en Railway
 
@@ -18,10 +18,10 @@ La conexion PostgreSQL y la contrasena de base de datos no deben ponerse en el f
 
 `/acceso-jr-84k2.html`
 
-## Para que el frontend publico muestre pagos con Stripe
+## Endpoint util para validar Railway
 
-Todavia falta completar el `anon key` en `assets/js/config.js` si quieres seguir usando las Edge Functions actuales de Supabase para checkout.
+`/api/health.php`
 
-## Si quieres la opcion mas segura
+## Reservas
 
-En el siguiente paso puedo mover tambien checkout y webhook al backend de Railway para que ninguna llave de pagos viva del lado del navegador.
+Por ahora el sitio trabaja sin pagos en linea. Las reservas se registran en base de datos y el usuario continua por WhatsApp para cerrar la venta.

@@ -6,7 +6,7 @@
     <title>Jalisco Rutas | Viajes y rutas turisticas desde Guadalajara</title>
     <meta
       name="description"
-      content="Vende viajes y rutas turisticas desde Guadalajara con catalogo vivo, apartados en linea, WhatsApp y panel administrable."
+      content="Vende viajes y rutas turisticas desde Guadalajara con catalogo vivo, reservas por WhatsApp y panel administrable."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,7 +15,6 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./assets/css/styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./assets/js/config.js"></script>
     <script src="./assets/js/site.js" defer></script>
   </head>
@@ -56,7 +55,7 @@
         <section class="hero-v2">
           <div class="hero-copy">
             <span class="eyebrow">Tours en Jalisco</span>
-            <h1 id="heroTitle">Viajes y rutas turisticas con cupo real, apartado rapido y pago en linea</h1>
+            <h1 id="heroTitle">Viajes y rutas turisticas con cupo real y apartado rapido</h1>
             <p id="heroSubtitle">
               Publica nuevas salidas cada semana, recibe reservas desde Guadalajara y la Zona Metropolitana, y
               administra todo desde un dashboard conectado a Supabase.
@@ -74,7 +73,7 @@
               </article>
               <article>
                 <strong>Ventas directas</strong>
-                <span>Formulario, chatbot y checkout listos para convertir interes en reserva.</span>
+                <span>Formulario, chatbot y WhatsApp listos para convertir interes en reserva.</span>
               </article>
               <article>
                 <strong>Enfoque local</strong>
@@ -100,7 +99,7 @@
               </div>
             </div>
             <div class="status-banner" id="runtimeStatus">
-              Modo demo activo. Configura Supabase para activar catalogo real, formularios y pagos.
+              Modo demo activo. Conecta Railway con tu base para activar catalogo real, formularios y reservas.
             </div>
           </div>
         </section>
@@ -222,12 +221,12 @@
             <article>
               <strong>2</strong>
               <h3>El cliente aparta</h3>
-              <p>Ve la salida, deja sus datos y pasa al checkout o a WhatsApp si aun estas configurando pagos.</p>
+              <p>Ve la salida, deja sus datos y pasa a WhatsApp para cerrar la reserva contigo.</p>
             </article>
             <article>
               <strong>3</strong>
               <h3>Tu confirmas y llenas cupo</h3>
-              <p>Revisas reservas, mensajes y pagos desde el panel para dar seguimiento rapido.</p>
+              <p>Revisas reservas y mensajes desde el panel para dar seguimiento rapido.</p>
             </article>
           </div>
         </section>
@@ -249,8 +248,8 @@
               <p>Si. El dashboard administra viajes, salidas, cupos, textos del sitio y datos de contacto.</p>
             </details>
             <details>
-              <summary>Se puede aceptar apartado en linea?</summary>
-              <p>Si. Ya esta preparado para Stripe y si prefieres Mercado Pago o Conekta lo adaptamos en el siguiente paso.</p>
+              <summary>Como se aparta un viaje?</summary>
+              <p>El cliente deja sus datos, la reserva queda registrada y se le dirige a WhatsApp para confirmar el cierre contigo.</p>
             </details>
             <details>
               <summary>El sitio ya esta pensado para celular?</summary>
@@ -349,7 +348,7 @@
               Lugares a reservar
               <input type="number" name="seats_reserved" min="1" max="10" value="1" required />
             </label>
-            <button class="button button-primary" type="submit">Continuar al pago</button>
+            <button class="button button-primary" type="submit">Enviar reserva</button>
             <p class="form-feedback" id="bookingFeedback"></p>
           </form>
         </div>
