@@ -108,7 +108,7 @@
   async function request(url, options = {}) {
     const adminToken = getAdminToken();
     const response = await fetch(url, {
-      credentials: 'omit',
+      credentials: 'same-origin',
       headers: {
         'Content-Type': 'application/json',
         ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {}),
