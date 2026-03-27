@@ -105,8 +105,9 @@
         empty_text: 'Estamos preparando la portada comercial.'
       },
       runtime: {
-        connected_message: 'Sitio conectado al backend. Catalogo y textos cargados desde la base de datos.',
-        fallback_message: 'No se pudo conectar al backend. Se cargo el modo demo para que el sitio siga visible.'
+        visitor_intro: 'Eres el cliente numero {count} en entrar a nuestra red.',
+        visitor_outro: 'Esperamos llevarte a un lugar interesante y ayudarte a encontrar el viaje ideal para tu proxima aventura.',
+        fallback_message: 'Explora nuestras rutas y dejate sorprender. Estamos listos para ayudarte a encontrar una experiencia inolvidable.'
       },
       trust_strip: {
         items: [

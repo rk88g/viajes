@@ -5,3 +5,4 @@
 \i ./migrations/20260326_init.sql
 \i ./migrations/20260327_site_settings_content.sql
 \i ./migrations/20260327_income_entries_and_message_notes.sql
+\i ./migrations/20260327_site_visitors.sql

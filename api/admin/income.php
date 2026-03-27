@@ -62,8 +62,10 @@ try {
                      notes = :notes
                  where id = :id'
             );
-            $data[':id'] = $incomeId;
-            $stmt->execute($data);
+            $updateData = $data;
+            unset($updateData[':source_type']);
+            $updateData[':id'] = $incomeId;
+            $stmt->execute($updateData);
         } else {
             $stmt = $pdo->prepare(
                 'insert into public.income_entries
