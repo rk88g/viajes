@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 declare(strict_types=1);
 
 require dirname(__DIR__) . '/_bootstrap.php';
@@ -82,4 +82,3 @@ try {
 } catch (Throwable $exception) {
     fail($exception->getMessage(), 500);
 }
-
